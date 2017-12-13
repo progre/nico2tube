@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "lib",
+    "jsx": "react",
+    "lib": [
+      "es2017",
+      "dom",
+      "dom.iterable"
+    ],
+    "module": "commonjs",
+    "noUnusedLocals": true,
+    "plugins": [
+      {
+        "name": "tslint-language-service"
+      }
+    ],
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "es5"
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}
