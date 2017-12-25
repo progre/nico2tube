@@ -1,5 +1,9 @@
 {
   "extends": [
     "@progre/tslint-config"
-  ]
+  ],
+  "rules": {
+    "chai-vague-errors": false,
+    "no-http-string": false
+  }
 }

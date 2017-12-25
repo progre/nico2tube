@@ -26,7 +26,7 @@ const tsLoader = {
 
 const clientSide = {
   entry: {
-    index: './src/public/js/index.ts'
+    index: './src/public/js/index.tsx'
   },
   externals: /^electron$/,
   module: tsLoader,

@@ -20,6 +20,8 @@
     "target": "es5"
   },
   "exclude": [
-    "node_modules"
+    "lib",
+    "node_modules",
+    "test"
   ]
 }
