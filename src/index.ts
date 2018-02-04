@@ -4,7 +4,7 @@ const { app, BrowserWindow, ipcMain } = electron;
 import TransferTaskWorker from './application/TransferTaskWorker';
 
 async function main() {
-  await new Promise((resolve, reject) => app.once('ready', resolve));
+  await new Promise((resolve, _) => app.once('ready', resolve));
   app.on('window-all-closed', () => { app.quit(); });
   start();
 }
@@ -46,7 +46,7 @@ function listenIPC(transferTaskWorker: TransferTaskWorker) {
   ipcMain.on('authenticateYoutube', async () => {
     await transferTaskWorker.authenticate();
   });
-  ipcMain.on('addNiconicoURL', (event: any, { url }: { url: string }) => {
+  ipcMain.on('addNiconicoURL', (_: any, { url }: { url: string }) => {
     transferTaskWorker.enqueue(url);
   });
 }

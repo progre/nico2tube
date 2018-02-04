@@ -40,7 +40,7 @@ async function getAccessToken() {
 }
 
 export default class Youtube {
-  private accessToken: AccessToken;
+  private accessToken?: AccessToken;
   private authenticating = false;
 
   async authenticate() {
@@ -67,7 +67,7 @@ export default class Youtube {
   ) {
     return new Observable<number>((subscriber) => {
       fs.stat(filePath, (err1, { size }) => {
-        if (err1! != null) {
+        if (err1 != null) {
           subscriber.error(err1);
           return;
         }
@@ -101,7 +101,7 @@ async function uploadThumbnail(videoId: string, filePath: string) {
   await new Promise((resolve, reject) => {
     youtubeAPI.thumbnails.set(
       { videoId, media: { body: fs.createReadStream(filePath) } },
-      (err: any, data: any) => {
+      (err: any, _: any) => {
         if (err != null) {
           reject(err);
           return;

@@ -3,7 +3,13 @@
     "@progre/tslint-config"
   ],
   "rules": {
-    "chai-vague-errors": false,
-    "no-http-string": false
+    "import-name": false,
+    "no-http-string": false,
+    "no-implicit-dependencies": [
+      true,
+      "dev"
+    ],
+    "no-object-literal-type-assertion": false,
+    "type-literal-delimiter": false
   }
 }

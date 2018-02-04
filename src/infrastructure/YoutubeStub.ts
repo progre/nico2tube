@@ -7,10 +7,10 @@ export default class YoutubeStub {
   }
 
   upload(
-    filePath: string,
-    thumbnailFilePath: string,
-    snippet: Snippet,
-    privacyStatus: PrivacyStatus,
+    _: string,
+    __: string,
+    ___: Snippet,
+    ____: PrivacyStatus,
   ) {
     process.stdout.write('upload\n');
     return new Observable((subscriber) => {

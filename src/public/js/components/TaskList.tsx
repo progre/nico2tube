@@ -1,4 +1,4 @@
-import List, { ListItem, ListItemText } from 'material-ui/List';
+import { List, ListItem, ListItemText } from 'material-ui';
 import * as React from 'react';
 import TextAdd from './TextAdd';
 
@@ -9,14 +9,14 @@ export default function TaskList(props: {
 }) {
   return (
     <>
-    <TextAdd style={{ marginTop: '60px' }} onAddClick={props.onAddClick} />
-    <List>
-      {props.tasks.map(x => (
-        <ListItem button key={x}>
-          <ListItemText inset primary={x} />
-        </ListItem>
-      ))}
-    </List>
+      <TextAdd style={{ marginTop: '60px' }} onAddClick={props.onAddClick} />
+      <List>
+        {props.tasks.map(x => (
+          <ListItem button key={x}>
+            <ListItemText inset primary={x} />
+          </ListItem>
+        ))}
+      </List>
     </>
   );
 }

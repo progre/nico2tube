@@ -10,8 +10,8 @@ export default class ConfigurationRepo {
 
   async get() {
     const id = uidSafe.sync(8);
-    return await new Promise<Configuration>((resolve, reject) => {
-      electron.ipcMain.on(id, (event: any, arg: any) => {
+    return new Promise<Configuration>((resolve, _) => {
+      electron.ipcMain.on(id, (__: any, arg: any) => {
         resolve(arg.configuration);
       });
       this.webContents.send('getConfiguration', { id });

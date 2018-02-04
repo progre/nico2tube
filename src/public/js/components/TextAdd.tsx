@@ -7,8 +7,8 @@ export interface Props {
   onAddClick(value: string): void;
 }
 
-export default class TextAdd extends React.Component<Props, {}> {
-  private input: HTMLInputElement;
+export default class TextAdd extends React.Component<Props> {
+  private input?: HTMLInputElement;
 
   constructor(props: Props, context?: any) {
     super(props, context);
@@ -44,6 +44,9 @@ export default class TextAdd extends React.Component<Props, {}> {
   }
 
   private onClick() {
+    if (this.input == null) {
+      return;
+    }
     const text = this.input.value || '';
     this.input.value = '';
     this.props.onAddClick(text);

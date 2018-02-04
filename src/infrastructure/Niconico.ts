@@ -1,8 +1,7 @@
 import * as fs from 'fs';
-// tslint:disable-next-line:import-name
 import fetch from 'node-fetch';
 const progressStream = require('progress-stream');
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 export default class Niconico {
   async getGetThumbInfo(videoId: string) {
@@ -10,7 +9,7 @@ export default class Niconico {
     if (res.status !== 200) {
       throw new Error();
     }
-    return await res.text();
+    return res.text();
   }
 
   async createSessionCookie(email: string, password: string) {

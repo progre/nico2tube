@@ -21,7 +21,7 @@ function mapDispatchToProps(dispatch: Redux.Dispatch<{}>) {
     onWorkingFolderPathChange(e: React.ChangeEvent<HTMLInputElement>) {
       dispatch(actions.setWorkingFolderPath(e.target.value));
     },
-    onYoutubeAuthenticateClick(e: React.MouseEvent<HTMLInputElement>) {
+    onYoutubeAuthenticateClick(_: React.MouseEvent<HTMLInputElement>) {
       electron.ipcRenderer.send('authenticateYoutube');
     },
     onNiconicoURLAdd(url: string) {

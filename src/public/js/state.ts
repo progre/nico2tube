@@ -39,6 +39,6 @@ function migrate(state: any) {
   return migrate0to1(state);
 }
 
-function migrate0to1(state: any) {
+function migrate0to1(_: any) {
   return initialState;
 }

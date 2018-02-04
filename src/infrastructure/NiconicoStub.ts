@@ -1,7 +1,7 @@
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 export default class NiconicoStub {
-  async getGetThumbInfo(videoId: string) {
+  async getGetThumbInfo(_: string) {
     process.stdout.write('getGetThumbInfo\n');
     return `<?xml version="1.0" encoding="UTF-8"?>
 <nicovideo_thumb_response status="ok">
@@ -21,12 +21,12 @@ export default class NiconicoStub {
 </nicovideo_thumb_response>`;
   }
 
-  async createSessionCookie(email: string, password: string) {
+  async createSessionCookie(_: string, __: string) {
     process.stdout.write('createSessionCookie\n');
     return '';
   }
 
-  async getGetFlv(cookie: string, videoId: string) {
+  async getGetFlv(_: string, __: string) {
     process.stdout.write('getGetFlv\n');
     return {
       url: '',
@@ -36,19 +36,19 @@ export default class NiconicoStub {
   }
 
   download(
-    cookie: string,
-    videoId: string,
-    url: string,
-    workingFolderPath: string,
+    _: string,
+    __: string,
+    ___: string,
+    ____: string,
   ) {
     process.stdout.write('download\n');
     return new Observable((subscriber) => { subscriber.complete(); });
   }
 
   async downloadThumbnail(
-    videoId: string,
-    url: string,
-    workingFolderPath: string,
+    _: string,
+    __: string,
+    ___: string,
   ) {
     process.stdout.write('downloadThumbnail\n');
     return '';

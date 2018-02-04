@@ -18,16 +18,16 @@ export interface Props {
   onNiconicoURLAdd(value: string): void;
 }
 
-export default class Root extends React.Component<Props, {}> {
+export default class Root extends React.Component<Props> {
   render() {
     return (
       <>
-      <Configuration {...this.props.configuration} {...this.props} />
-      <TaskList
-        tasks={this.props.taskList.tasks}
-        onAddClick={this.props.onNiconicoURLAdd}
-      />
-      <ErrorList errors={this.props.taskList.errors} />
+        <Configuration {...this.props.configuration} {...this.props} />
+        <TaskList
+          tasks={this.props.taskList.tasks}
+          onAddClick={this.props.onNiconicoURLAdd}
+        />
+        <ErrorList errors={this.props.taskList.errors} />
       </>
     );
   }
