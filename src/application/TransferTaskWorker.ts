@@ -1,4 +1,4 @@
-import * as electron from 'electron';
+import electron from 'electron';
 import { Subject } from 'rxjs';
 import NiconicoDownloader from '../domain/NiconicoDownloader';
 import NiconicoVideo from '../domain/NiconicoVideo';

@@ -1,5 +1,5 @@
 import { Button, Grid, TextField } from 'material-ui';
-import * as React from 'react';
+import React from 'react';
 
 export interface Props {
   style: React.CSSProperties;

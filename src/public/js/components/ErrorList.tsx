@@ -1,5 +1,5 @@
 import { List, ListItem, ListItemText } from 'material-ui';
-import * as React from 'react';
+import React from 'react';
 
 export default function ErrorList(props: { errors: ReadonlyArray<string>; }) {
   return (

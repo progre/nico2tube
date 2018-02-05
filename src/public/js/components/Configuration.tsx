@@ -1,5 +1,5 @@
 import { Button, FormControl, FormLabel, TextField } from 'material-ui';
-import * as React from 'react';
+import React from 'react';
 
 export default function Configuration(props: {
   niconicoEmail: string;

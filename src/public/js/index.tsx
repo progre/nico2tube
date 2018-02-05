@@ -1,7 +1,7 @@
-import * as electron from 'electron';
-import * as React from 'react';
-import * as reactDOM from 'react-dom';
-import * as reactRedux from 'react-redux';
+import electron from 'electron';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 import * as redux from 'redux';
 import * as reduxPersist from 'redux-persist';
 import { addError, setQueue } from './actions/actions';
@@ -19,10 +19,10 @@ async function main() {
     }),
   );
   await new Promise(resolve => reduxPersist.persistStore(store, {}, resolve));
-  reactDOM.render(
-    <reactRedux.Provider store={store}>
+  ReactDOM.render(
+    <Provider store={store}>
       <App />
-    </reactRedux.Provider>,
+    </Provider>,
     document.getElementsByTagName('main')[0],
   );
   listenIPC(store);

@@ -1,7 +1,7 @@
-import * as electron from 'electron';
+import electron from 'electron';
 const electronGoogleOauth = require('electron-google-oauth');
 const googleOAuth = electronGoogleOauth(electron.BrowserWindow);
-import * as fs from 'fs';
+import fs from 'fs';
 import { Observable } from 'rxjs';
 const encryptor = require('simple-encryptor')('2P54vcTFvrbvf6ga');
 const youtubeAPI = require('youtube-api');

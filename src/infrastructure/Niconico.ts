@@ -1,4 +1,4 @@
-import * as fs from 'fs';
+import fs from 'fs';
 import fetch from 'node-fetch';
 const progressStream = require('progress-stream');
 import { Observable } from 'rxjs';

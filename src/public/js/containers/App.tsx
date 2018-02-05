@@ -1,8 +1,8 @@
-import * as electron from 'electron';
+import electron from 'electron';
 // @ts-ignore
-import * as react from 'react';
-import * as reactRedux from 'react-redux';
-import * as Redux from 'redux';
+import react from 'react';
+import { connect } from 'react-redux';
+import { Dispatch } from 'redux';
 import * as actions from '../actions/actions';
 import Root, { Props } from '../components/Root';
 
@@ -10,7 +10,7 @@ function mapStateToProps(state: Props) {
   return state;
 }
 
-function mapDispatchToProps(dispatch: Redux.Dispatch<{}>) {
+function mapDispatchToProps(dispatch: Dispatch<{}>) {
   return {
     onNiconicoEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
       dispatch(actions.setNiconicoEmail(e.target.value));
@@ -31,4 +31,4 @@ function mapDispatchToProps(dispatch: Redux.Dispatch<{}>) {
   };
 }
 
-export default reactRedux.connect(mapStateToProps, mapDispatchToProps)(Root);
+export default connect(mapStateToProps, mapDispatchToProps)(Root);

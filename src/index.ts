@@ -1,5 +1,5 @@
 try { require('source-map-support').install(); } catch (e) { /* NOP */ }
-import * as electron from 'electron';
+import electron from 'electron';
 const { app, BrowserWindow, ipcMain } = electron;
 import TransferTaskWorker from './application/TransferTaskWorker';
 

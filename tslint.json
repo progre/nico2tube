@@ -4,6 +4,7 @@
   ],
   "rules": {
     "import-name": false,
+    "match-default-export-name": false,
     "no-http-string": false,
     "no-implicit-dependencies": [
       true,
