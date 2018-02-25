@@ -1,7 +1,6 @@
 import fs from 'fs';
 import fetch from 'node-fetch';
 const progressStream = require('progress-stream');
-import { Observable } from 'rxjs';
 
 export default class Niconico {
   async getGetThumbInfo(videoId: string) {
@@ -41,15 +40,10 @@ export default class Niconico {
   }
 
   async getGetFlv(cookie: string, videoId: string) {
-    const res = await fetch(
+    const url = getURLOnGetFLV(await fetchURLWithCookie(
       `http://flapi.nicovideo.jp/api/getflv/${videoId}?as3=1`,
-      { headers: { cookie } },
-    );
-    if (res.status !== 200) {
-      throw new Error();
-    }
-    const body = await res.text();
-    const url = getURLOnGetFLV(body);
+      cookie,
+    ));
     if (url == null) {
       return null;
     }
@@ -60,46 +54,45 @@ export default class Niconico {
     };
   }
 
-  download(
+  async download(
     cookie: string,
     videoId: string,
     url: string,
     filePath: string,
+    progressReceiver: { progress(progress: number): void; },
   ) {
-    return new Observable<number>((subscriber) => {
-      (async () => {
-        const preAccessResult = await fetch(`http://www.nicovideo.jp/watch/${videoId}`, {
-          headers: { cookie },
-          redirect: 'manual',
-        });
-        if (preAccessResult.status !== 200) {
-          throw new Error();
-        }
-        const mainAccessResult = await fetch(url, {
-          headers: {
-            cookie: `${cookie};${preAccessResult.headers.getAll('set-cookie').join(';')}`,
-          },
-          redirect: 'manual',
-        });
-        if (mainAccessResult.status !== 200) {
-          throw new Error();
-        }
-        const str = progressStream({
-          length: mainAccessResult.headers.get('content-length'),
-          time: 250,
-        });
-        str.on('progress', (progress: any) => {
-          subscriber.next(progress.percentage);
-        });
-        if (filePath.length === 0) {
-          return filePath; // debug use only
-        }
-        mainAccessResult.body
-          .pipe(str)
-          .pipe(fs.createWriteStream(filePath))
-          .on('error', (e: Error) => { subscriber.error(e); })
-          .on('finish', () => { subscriber.complete(); });
-      })().catch((e) => { subscriber.error(e); });
+    const preAccessResult = await fetch(`http://www.nicovideo.jp/watch/${videoId}`, {
+      headers: { cookie },
+      redirect: 'manual',
+    });
+    if (preAccessResult.status !== 200) {
+      throw new Error();
+    }
+    const mainAccessResult = await fetch(url, {
+      headers: {
+        cookie: `${cookie};${preAccessResult.headers.getAll('set-cookie').join(';')}`,
+      },
+      redirect: 'manual',
+    });
+    if (mainAccessResult.status !== 200) {
+      throw new Error();
+    }
+    const str = progressStream({
+      length: mainAccessResult.headers.get('content-length'),
+      time: 250,
+    });
+    str.on('progress', (progress: any) => {
+      progressReceiver.progress(progress.percentage / 100);
+    });
+    if (filePath.length === 0) {
+      return; // debug use only
+    }
+    await new Promise((resolve, reject) => {
+      mainAccessResult.body
+        .pipe(str)
+        .pipe(fs.createWriteStream(filePath))
+        .on('error', (e: Error) => { reject(e); })
+        .on('finish', () => { resolve(); });
     });
   }
 
@@ -108,21 +101,40 @@ export default class Niconico {
     url: string,
     workingFolderPath: string,
   ) {
-    const res = await fetch(url);
-    if (res.status !== 200) {
-      throw new Error();
-    }
     const filePath = `${workingFolderPath}/${videoId}.jpg`;
     if (workingFolderPath.length === 0) {
       return filePath; // debug use only
     }
-    await new Promise((resolve, reject) => {
-      res.body.pipe(fs.createWriteStream(filePath))
-        .on('error', reject)
-        .on('finish', resolve);
-    });
+    await downloadFile(url, filePath);
     return filePath;
   }
+
+  async getMylist(cookie: string, mylistId: string) {
+    return fetchURLWithCookie(
+      `http://www.nicovideo.jp/mylist/${mylistId}?rss=2.0`,
+      cookie,
+    );
+  }
+}
+
+async function fetchURLWithCookie(url: string, cookie: string) {
+  const res = await fetch(url, { headers: { cookie } });
+  if (res.status !== 200) {
+    throw new Error();
+  }
+  return res.text();
+}
+
+async function downloadFile(from: string, to: string) {
+  const res = await fetch(from);
+  if (res.status !== 200) {
+    throw new Error();
+  }
+  await new Promise((resolve, reject) => {
+    res.body.pipe(fs.createWriteStream(to))
+      .on('error', reject)
+      .on('finish', resolve);
+  });
 }
 
 function getURLOnGetFLV(body: string): string | null {

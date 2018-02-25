@@ -6,14 +6,16 @@ import Youtube, {
 import SequentialWorker from './SequentialWorker';
 
 export default class YoutubeUploader {
-  private readonly privacyStatus: PrivacyStatus = 'public';
   private readonly sequentialWorker = new SequentialWorker();
 
   authenticationRequired = new Subject();
+  progressUpdated = new Subject<{ niconicoVideoId: string; progress: number; }>();
+  uploaded = new Subject<{ niconicoVideoId: string, youtubeVideoId: string }>();
   error = this.sequentialWorker.error;
 
   constructor(
-    private youtube: Youtube,
+    private readonly youtube: Youtube,
+    private readonly privacyStatus: PrivacyStatus,
   ) {
   }
 
@@ -21,24 +23,24 @@ export default class YoutubeUploader {
     this.sequentialWorker.ready();
   }
 
-  enqueue(filePath: string, thumbnailFilePath: string, snippet: Snippet) {
+  enqueue(niconicoVideoId: string, filePath: string, thumbnailFilePath: string, snippet: Snippet) {
     this.sequentialWorker.enqueue(
       filePath,
       // tslint:disable-next-line:promise-function-async promise-must-complete
-      () => new Promise((resolve, reject) => {
-        this.youtube.upload(
+      async () => {
+        const videoId = await this.youtube.uploadVideo(
           filePath,
           thumbnailFilePath,
           snippet,
           this.privacyStatus,
-        ).subscribe(
-          (progress) => {
-            console.log(progress);
+          {
+            progress: (progress: number) => {
+              this.progressUpdated.next({ niconicoVideoId, progress });
+            },
           },
-          reject,
-          resolve,
         );
-      }),
+        this.uploaded.next({ niconicoVideoId, youtubeVideoId: videoId });
+      },
     );
   }
 }

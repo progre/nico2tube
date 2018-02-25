@@ -8,8 +8,9 @@ export default class NiconicoDownloader {
   private sequentialWorker = new SequentialWorker();
 
   error = this.sequentialWorker.error;
+  progressUpdated = new Subject<{ videoId: string; progress: number; }>();
   downloaded = new Subject<{ videoId: string; filePath: string; }>();
-  queueUpdated = new Subject<string>();
+  // queueUpdated = new Subject<string>();
 
   constructor(
     private configurationRepo: ConfigurationRepo,
@@ -28,7 +29,7 @@ export default class NiconicoDownloader {
       return;
     }
     this.sequentialWorker.enqueue(videoId, async () => this.task(videoId));
-    this.queueUpdated.next();
+    // this.queueUpdated.next();
   }
 
   ready() {
@@ -55,20 +56,17 @@ export default class NiconicoDownloader {
       throw new Error('economy');
     }
     const filePath = `${configuration.workingFolderPath}/${videoId}`;
-    await new Promise((resolve, reject) => {
-      this.niconico.download(
-        sessionCookie,
-        videoId,
-        status.url,
-        filePath,
-      ).subscribe(
-        (progress) => {
-          console.log(progress);
+    await this.niconico.download(
+      sessionCookie,
+      videoId,
+      status.url,
+      filePath,
+      {
+        progress: (progress: number) => {
+          this.progressUpdated.next({ videoId, progress });
         },
-        reject,
-        resolve,
-      );
-    });
+      },
+    );
     this.downloaded.next({ filePath, videoId });
   }
 }

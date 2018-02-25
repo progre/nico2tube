@@ -25,7 +25,7 @@
     "@commitlint/cli": "^6.0.5",
     "@commitlint/config-conventional": "^6.0.4",
     "@progre/electron-packer": "^0.1.2",
-    "@progre/tslint-config": "~5.4.0",
+    "@progre/tslint-config": "~5.6.0",
     "@types/chai": "^4.0.10",
     "@types/mocha": "^2.2.44",
     "@types/node": "^8.5.9",

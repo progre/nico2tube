@@ -5,7 +5,7 @@ export default class NiconicoVideo {
     readonly title: string,
     readonly description: string,
     readonly createdAt: string, // yyyy-MM-ddTHH:mm:ss+09:00
-    readonly category: number,
+    readonly category: string | null,
     readonly tags: ReadonlyArray<string>,
     readonly thumbnailURL: string,
     readonly watchURL: string,
@@ -28,7 +28,7 @@ export default class NiconicoVideo {
       thumb.title[0],
       thumb.description[0],
       thumb.first_retrieve[0],
-      thumb.tags[0].tag, // category
+      thumb.tags[0].tag.filter((x: any) => x.$.category != null)[0],
       thumb.tags[0].tag.map((x: any) => typeof x === 'string' ? x : x._),
       thumb.thumbnail_url[0],
       thumb.watch_url[0],
@@ -36,17 +36,17 @@ export default class NiconicoVideo {
   }
 
   toSnippet() {
-    // TODO: 出力項目の精査
     return {
       title: this.title,
       description: this.description,
       tags: this.tags,
-      // categoryId?: string;
+      categoryId: convertCategory(this.category),
     };
   }
 
-  // http://dic.nicovideo.jp/a/%E3%82%AB%E3%83%86%E3%82%B4%E3%83%AA%E3%82%BF%E3%82%B0
-  // https://developers.google.com/apis-explorer/#p/youtube/v3/youtube.videoCategories.list?part=snippet&hl=ja&regionCode=jp&fields=items(id%252Csnippet)&_h=1&
+  // http://dic.nicovideo.jp/a/カテゴリタグ
+  // https://developers.google.com/youtube/v3/docs/videoCategories/list#try-it
+  //   part=id,snippet regionCode=JP
 }
 
 export function toVideoId(url: string) {
@@ -56,4 +56,45 @@ export function toVideoId(url: string) {
     return null;
   }
   return regExpArray[1];
+}
+
+// tslint:disable-next-line:cyclomatic-complexity
+function convertCategory(category: string | null) {
+  if (category == null) {
+    return null;
+  }
+  const convertMap = <{ [category: string]: number | null }>{
+    エンターテイメント: 24,
+    音楽: 10,
+    歌ってみた: 10,
+    演奏してみた: 10,
+    踊ってみた: 10,
+    VOCALOID: 10,
+    ニコニコインディーズ: 10,
+    動物: 15,
+    料理: 26, // Howto & Style
+    自然: 19, // Travel & Events
+    旅行: 19,
+    スポーツ: 17,
+    ニコニコ動画講座: 26,
+    車載動画: 2,
+    歴史: 27, // Education
+    科学: 28,
+    ニコニコ技術部: 28,
+    ニコニコ手芸部: 26, // Howto & Style
+    作ってみた: 26, // Howto & Style
+    政治: 25,
+    アニメ: 1,
+    ゲーム: 20,
+    東方: 20,
+    アイドルマスター: 20,
+    ラジオ: 24, // Entertainment
+    描いてみた: 26, // Howto & Style
+    例のアレ: 23, // Comedy
+    その他: null,
+    日記: 22,
+    'R-18': null,
+    ファッション: 22, // People & Blogs
+  };
+  return convertMap[category];
 }
