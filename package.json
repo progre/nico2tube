@@ -6,6 +6,7 @@
     "url": "https://github.com/progre/typescript-boilerplate/issues"
   },
   "dependencies": {
+    "cron": "^1.3.0",
     "electron-google-oauth": "^2.0.0",
     "material-ui": "^1.0.0-beta.24",
     "node-fetch": "^1.7.3",
@@ -27,6 +28,7 @@
     "@progre/electron-packer": "^0.1.2",
     "@progre/tslint-config": "~5.6.0",
     "@types/chai": "^4.0.10",
+    "@types/cron": "^1.2.1",
     "@types/mocha": "^2.2.44",
     "@types/node": "^8.5.9",
     "@types/node-fetch": "^1.6.7",

@@ -1,14 +1,14 @@
+import cron from 'cron';
 import electron from 'electron';
 import { Subject } from 'rxjs';
 import NiconicoDownloader from '../domain/NiconicoDownloader';
 import NiconicoMylist from '../domain/NiconicoMylist';
 import NiconicoVideo from '../domain/NiconicoVideo';
-import { Task, TaskQueue } from '../domain/types';
 import YoutubeUploader from '../domain/YoutubeUploader';
 import ConfigurationRepo from '../infrastructure/ConfigurationRepo';
 import Niconico from '../infrastructure/Niconico';
 import NiconicoStub from '../infrastructure/NiconicoStub';
-import Youtube from '../infrastructure/Youtube';
+import Youtube, { PrivacyStatus } from '../infrastructure/Youtube';
 import YoutubeStub from '../infrastructure/YoutubeStub';
 
 export interface Playlist {
@@ -43,34 +43,56 @@ export default class TransferTaskWorker {
       this.youtube = new Youtube();
     }
     this.configurationRepo = new ConfigurationRepo(webContents);
-    this.niconicoDownloader = new NiconicoDownloader(
+    this.niconicoDownloader = this.initDownloader(
       this.configurationRepo,
       this.niconico,
     );
-    this.youtubeUploader = new YoutubeUploader(this.youtube, this.privacyStatus);
+    this.youtubeUploader = this.initUploader(this.youtube, this.privacyStatus);
 
-    this.niconicoDownloader.progressUpdated.subscribe(({ videoId, progress }) => {
+    this.requestAfterEconomyTime();
+  }
+
+  private initDownloader(
+    configurationRepo: ConfigurationRepo,
+    niconico: Niconico,
+  ) {
+    const downloader = new NiconicoDownloader(
+      configurationRepo,
+      niconico,
+    );
+    downloader.progressUpdated.subscribe(({ videoId, progress }) => {
       this.message.next(`${videoId} ダウンロード中: ${Math.floor(progress * 100)}%`);
     });
-    this.niconicoDownloader.downloaded.subscribe(async ({ videoId, filePath }) => {
+    downloader.downloaded.subscribe(async ({ videoId, filePath }) => {
       try {
         await this.afterDownload(videoId, filePath);
       } catch (e) {
         this.error.next(e);
       }
     });
-    this.youtubeUploader.progressUpdated.subscribe(({ niconicoVideoId, progress }) => {
+    downloader.error.subscribe((e) => {
+      if (e.message === 'economy') {
+        this.message.next('低画質モードのため中止しました。2:05に再開します。');
+      }
+      this.error.next(e);
+    });
+    return downloader;
+  }
+
+  private initUploader(youtube: Youtube, privacyStatus: PrivacyStatus) {
+    const uploader = new YoutubeUploader(youtube, privacyStatus);
+    uploader.progressUpdated.subscribe(({ niconicoVideoId, progress }) => {
       this.message.next(`${niconicoVideoId} アップロード中: ${Math.floor(progress * 100)}%`);
     });
-    this.youtubeUploader.uploaded.subscribe(async ({ niconicoVideoId, youtubeVideoId }) => {
+    uploader.uploaded.subscribe(async ({ niconicoVideoId, youtubeVideoId }) => {
       try {
         await this.afterUpload(niconicoVideoId, youtubeVideoId);
       } catch (e) {
         this.error.next(e);
       }
     });
-    this.niconicoDownloader.error.subscribe(this.error);
-    this.youtubeUploader.error.subscribe(this.error);
+    uploader.error.subscribe(this.error);
+    return uploader;
   }
 
   async authenticate() {
@@ -185,5 +207,10 @@ export default class TransferTaskWorker {
       },
       this.privacyStatus,
     );
+  }
+
+  private requestAfterEconomyTime() {
+    // tslint:disable-next-line:no-unused-expression
+    new cron.CronJob('0 5 2 * * *', () => { this.niconicoDownloader.ready(); });
   }
 }

@@ -3,6 +3,7 @@ export const initialState = {
   configuration: {
     niconicoEmail: '',
     niconicoPassword: '',
+    niconicoNoEconomy: true,
     workingFolderPath: '',
   },
   taskList: {
