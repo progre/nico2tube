@@ -32,6 +32,11 @@ function taskListReducer(
   action: any,
 ) {
   switch (action.type) {
+    case actions.SET_MESSAGE:
+      return {
+        ...state,
+        message: action.payload,
+      };
     case actions.ADD_ERROR:
       return {
         ...state,

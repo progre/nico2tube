@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import * as redux from 'redux';
 import * as reduxPersist from 'redux-persist';
-import { addError, setQueue } from './actions/actions';
+import { addError, setMessage, setQueue } from './actions/actions';
 import App from './containers/App';
 import reducer from './reducers/reducer';
 import { createInitialState, State } from './state';
@@ -34,6 +34,10 @@ function listenIPC(store: redux.Store<State>) {
     electron.ipcRenderer.send(arg.id, {
       configuration: store.getState().configuration,
     });
+  });
+  electron.ipcRenderer.on('message', (_: any, arg: { message: string }) => {
+    if (arg.message == null) { throw new Error('logic error'); }
+    store.dispatch(setMessage(arg.message));
   });
   electron.ipcRenderer.on('addError', (_: any, arg: { message: string }) => {
     if (arg.message == null) { throw new Error('logic error'); }

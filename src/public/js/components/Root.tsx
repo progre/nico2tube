@@ -1,3 +1,4 @@
+import { TextField } from 'material-ui';
 import React from 'react';
 import ConfigurationDomain from '../../../domain/Configuration';
 import Configuration from './Configuration';
@@ -9,6 +10,7 @@ export interface Props {
   taskList: {
     tasks: ReadonlyArray<string>;
     errors: ReadonlyArray<string>;
+    message: string;
   };
 
   onNiconicoEmailChange(e: React.ChangeEvent<HTMLInputElement>): void;
@@ -27,6 +29,7 @@ export default class Root extends React.Component<Props> {
           tasks={this.props.taskList.tasks}
           onAddClick={this.props.onNiconicoURLAdd}
         />
+        <TextField fullWidth={true} value={this.props.taskList.message} />
         <ErrorList errors={this.props.taskList.errors} />
       </>
     );

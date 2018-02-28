@@ -33,6 +33,9 @@ function listenDomain(
   transferTaskWorker: TransferTaskWorker,
   webContents: electron.WebContents,
 ) {
+  transferTaskWorker.message.subscribe((message) => {
+    webContents.send('message', { message });
+  });
   transferTaskWorker.error.subscribe((e) => {
     console.error(e.stack || e);
     webContents.send('addError', { message: e.message });

@@ -28,10 +28,10 @@ export default class TransferTaskWorker {
   private readonly niconicoDownloader: NiconicoDownloader;
   private readonly youtube: Youtube;
   private readonly youtubeUploader: YoutubeUploader;
-  private readonly taskQueue: TaskQueue = [];
+  // readonly taskQueue: TaskQueue = [];
   private readonly playlists: Playlist[] = [];
 
-  // taskQueueUpdated = new Subject<{ niconicoURL: string }>();
+  message = new Subject<string>();
   error = new Subject<Error>();
 
   constructor(dryRun: boolean, webContents: electron.WebContents) {
@@ -50,7 +50,7 @@ export default class TransferTaskWorker {
     this.youtubeUploader = new YoutubeUploader(this.youtube, this.privacyStatus);
 
     this.niconicoDownloader.progressUpdated.subscribe(({ videoId, progress }) => {
-      console.log(videoId, progress);
+      this.message.next(`${videoId} ダウンロード中: ${Math.floor(progress * 100)}%`);
     });
     this.niconicoDownloader.downloaded.subscribe(async ({ videoId, filePath }) => {
       try {
@@ -60,7 +60,7 @@ export default class TransferTaskWorker {
       }
     });
     this.youtubeUploader.progressUpdated.subscribe(({ niconicoVideoId, progress }) => {
-      console.log(niconicoVideoId, progress);
+      this.message.next(`${niconicoVideoId} アップロード中: ${Math.floor(progress * 100)}%`);
     });
     this.youtubeUploader.uploaded.subscribe(async ({ niconicoVideoId, youtubeVideoId }) => {
       try {
@@ -80,10 +80,10 @@ export default class TransferTaskWorker {
 
   enqueue(niconicoURL: string) {
     const isPlaylist = niconicoURL.includes('mylist');
-    this.taskQueue.push(<Task>{
-      niconicoURL,
-      type: isPlaylist ? 'playlist' : 'video',
-    });
+    // this.taskQueue.push(<Task>{
+    //   niconicoURL,
+    //   type: isPlaylist ? 'playlist' : 'video',
+    // });
     // this.taskQueueUpdated.next({ niconicoURL });
     if (isPlaylist) {
       this.enqueueMylist(niconicoURL).catch((e) => { console.error(e.stack || e); });
@@ -97,6 +97,10 @@ export default class TransferTaskWorker {
     if (m == null || m[1] == null || m[1].length < 1) {
       throw new Error('invalid url');
     }
+    // this.taskQueue.push({
+    //   niconicoURL,
+    //   type: 'playlist',
+    // });
     const mylistId = m[1];
     const mylist = await this.fetchMylist(mylistId);
     this.playlists.push({
@@ -129,6 +133,7 @@ export default class TransferTaskWorker {
   }
 
   private async afterDownload(videoId: string, filePath: string) {
+    this.message.next(`${videoId} ダウンロード完了`);
     const getThimbInfoXML = await this.niconico.getGetThumbInfo(videoId);
     const niconicoVideo = await NiconicoVideo.fromGetThumbInfoXML(getThimbInfoXML);
     const conf = await this.configurationRepo.get();
@@ -146,6 +151,7 @@ export default class TransferTaskWorker {
   }
 
   private async afterUpload(niconicoVideoId: string, youtubeVideoId: string) {
+    this.message.next(`${niconicoVideoId} アップロード完了`);
     for (const playlist of this.playlists) {
       const item = playlist.items.find(x => x.niconicoVideoId === niconicoVideoId);
       if (item == null) {
@@ -162,6 +168,7 @@ export default class TransferTaskWorker {
         throw new Error('logic error');
       }
       this.playlists.splice(idx, 1);
+      this.message.next(`プレイリスト作成: ${playlist.name}`);
     }
   }
 

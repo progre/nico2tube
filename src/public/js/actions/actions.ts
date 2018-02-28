@@ -18,6 +18,11 @@ export function clearURL() {
   return { type: CLEAR_URL };
 }
 
+export const SET_MESSAGE = 'SET_MESSAGE';
+export function setMessage(message: string) {
+  return { type: SET_MESSAGE, payload: message };
+}
+
 export const ADD_ERROR = 'ADD_ERROR';
 export function addError(message: string) {
   return { type: ADD_ERROR, payload: message };

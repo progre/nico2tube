@@ -8,6 +8,7 @@ export const initialState = {
   taskList: {
     tasks: <ReadonlyArray<string>>[],
     errors: <ReadonlyArray<string>>[],
+    messsage: '',
   },
 };
 

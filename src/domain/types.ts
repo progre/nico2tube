@@ -25,6 +25,6 @@ export interface VideoTask {
   readonly type: 'video';
   title?: string;
   youtubeURL?: string;
-  download?: number;
-  upload?: number;
+  downloadProgress?: number;
+  uploadProgress?: number;
 }
