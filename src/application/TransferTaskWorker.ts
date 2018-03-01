@@ -210,7 +210,9 @@ export default class TransferTaskWorker {
   }
 
   private requestAfterEconomyTime() {
-    // tslint:disable-next-line:no-unused-expression
-    new cron.CronJob('0 5 2 * * *', () => { this.niconicoDownloader.ready(); });
+    const job = new cron.CronJob('0 5 2 * * *', () => {
+      this.niconicoDownloader.ready();
+    });
+    job.start();
   }
 }
