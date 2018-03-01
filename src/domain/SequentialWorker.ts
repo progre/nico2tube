@@ -6,8 +6,8 @@ export default class SequentialWorker {
 
   error = new Subject<Error>();
 
-  queue() {
-    return this.list.map(x => x.label);
+  length() {
+    return this.list.length;
   }
 
   enqueue(label: string, work: () => Promise<void>) {

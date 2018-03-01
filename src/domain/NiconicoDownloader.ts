@@ -1,3 +1,4 @@
+import { PowerSaveBlocker } from 'electron';
 import { Subject } from 'rxjs';
 import ConfigurationRepo from '../infrastructure/ConfigurationRepo';
 import Niconico from '../infrastructure/Niconico';
@@ -5,21 +6,18 @@ import { toVideoId } from './NiconicoVideo';
 import SequentialWorker from './SequentialWorker';
 
 export default class NiconicoDownloader {
-  private sequentialWorker = new SequentialWorker();
+  private readonly sequentialWorker = new SequentialWorker();
+  private powerSaveId: number | null = null;
 
-  error = this.sequentialWorker.error;
-  progressUpdated = new Subject<{ videoId: string; progress: number; }>();
-  downloaded = new Subject<{ videoId: string; filePath: string; }>();
-  // queueUpdated = new Subject<string>();
+  readonly error = this.sequentialWorker.error;
+  readonly progressUpdated = new Subject<{ videoId: string; progress: number; }>();
+  readonly downloaded = new Subject<{ videoId: string; filePath: string; }>();
 
   constructor(
     private configurationRepo: ConfigurationRepo,
     private niconico: Niconico,
+    private powerSaveBlocker: PowerSaveBlocker,
   ) {
-  }
-
-  queue() {
-    return this.sequentialWorker.queue();
   }
 
   enqueue(url: string) {
@@ -28,8 +26,10 @@ export default class NiconicoDownloader {
       this.error.next(new Error(`Invalid url: ${url}`));
       return;
     }
+    if (this.powerSaveId == null) {
+      this.startPowerSaving();
+    }
     this.sequentialWorker.enqueue(videoId, async () => this.task(videoId));
-    // this.queueUpdated.next();
   }
 
   ready() {
@@ -67,6 +67,21 @@ export default class NiconicoDownloader {
         },
       },
     );
+    if (this.sequentialWorker.length() <= 1) { // 今処理しているのが最後なら止める
+      this.stopPowerSaving();
+    }
     this.downloaded.next({ filePath, videoId });
+  }
+
+  private startPowerSaving() {
+    this.powerSaveId = this.powerSaveBlocker.start('prevent-app-suspension');
+  }
+
+  private stopPowerSaving() {
+    if (this.powerSaveId == null) {
+      throw new Error('logic error');
+    }
+    this.powerSaveBlocker.stop(this.powerSaveId);
+    this.powerSaveId = null;
   }
 }
