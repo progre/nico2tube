@@ -32,6 +32,15 @@ const updatePlaylist = async (params: any) => new Promise((resolve, reject) => {
     resolve(data);
   });
 });
+const insertPlaylist = async (params: any) => new Promise<any>((resolve, reject) => {
+  youtubeAPI.playlists.insert(params, (err: Error, data: any) => {
+    if (err != null) {
+      reject(err);
+      return;
+    }
+    resolve(data);
+  });
+});
 const insertPlaylistItem = async (params: any) => new Promise((resolve, reject) => {
   youtubeAPI.playlistItems.insert(params, (err: Error, data: any) => {
     if (err != null) {
@@ -152,15 +161,7 @@ export default class Youtube {
         throw e;
       }
     }
-    const { id } = await new Promise<any>((resolve, reject) => {
-      youtubeAPI.playlists.insert(playlistParams, (err: Error, data: any) => {
-        if (err != null) {
-          reject(err);
-          return;
-        }
-        resolve(data);
-      });
-    });
+    const { id } = await insertPlaylist(playlistParams);
     if (typeof id !== 'string') {
       throw new Error('creating playlist failed');
     }
