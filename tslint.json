@@ -6,10 +6,6 @@
     "import-name": false,
     "match-default-export-name": false,
     "no-http-string": false,
-    "no-implicit-dependencies": [
-      true,
-      "dev"
-    ],
     "no-object-literal-type-assertion": false,
     "type-literal-delimiter": false
   }

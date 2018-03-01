@@ -1,7 +1,10 @@
+// tslint:disable:no-implicit-dependencies
 try { require('source-map-support').install(); } catch (e) { /* NOP */ }
 import electron from 'electron';
-const { app, BrowserWindow, ipcMain } = electron;
+// tslint:enable:no-implicit-dependencies
 import TransferTaskWorker from './application/TransferTaskWorker';
+
+const { app, BrowserWindow, ipcMain } = electron;
 
 async function main() {
   await new Promise((resolve, _) => app.once('ready', resolve));

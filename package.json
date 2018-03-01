@@ -23,14 +23,14 @@
     "youtube-api": "^2.0.9"
   },
   "devDependencies": {
-    "@commitlint/cli": "^6.0.5",
-    "@commitlint/config-conventional": "^6.0.4",
+    "@commitlint/cli": "^6.1.2",
+    "@commitlint/config-conventional": "^6.1.2",
     "@progre/electron-packer": "^0.1.2",
     "@progre/tslint-config": "~5.6.0",
     "@types/chai": "^4.0.10",
     "@types/cron": "^1.2.1",
     "@types/mocha": "^2.2.44",
-    "@types/node": "^8.5.9",
+    "@types/node": "^8.9.4",
     "@types/node-fetch": "^1.6.7",
     "@types/react": "^16.0.31",
     "@types/react-dom": "^16.0.3",
@@ -41,17 +41,17 @@
     "copy-webpack-plugin": "^4.2.3",
     "cross-env": "^5.1.1",
     "del-cli": "^1.1.0",
-    "electron": "^1.7.9",
+    "electron": "^1.8.2",
     "husky": "^0.14.3",
     "mocha": "^4.0.1",
     "npm-run-all": "^4.1.1",
     "source-map-support": "^0.5.0",
-    "ts-loader": "^3.1.1",
+    "ts-loader": "^3.5.0",
     "tslint": "^5.9.1",
     "tslint-language-service": "^0.9.8",
-    "typescript": "^2.7.1",
+    "typescript": "^2.7.2",
     "uglify-save-license": "^0.4.1",
-    "webpack": "^3.10.0"
+    "webpack": "^3.11.0"
   },
   "files": [
     "lib"
@@ -65,7 +65,7 @@
     "url": "git+https://github.com/progre/typescript-boilerplate.git"
   },
   "scripts": {
-    "build": "run-p clean release-build",
+    "build": "run-s clean release-build",
     "clean": "del-cli lib tmp",
     "commitmsg": "commitlint -e $GIT_PARAMS",
     "debug-build": "cross-env NODE_ENV=development webpack --progress",
