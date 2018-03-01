@@ -1,5 +1,5 @@
 import cron from 'cron';
-import electron from 'electron';
+import electron, { powerSaveBlocker } from 'electron';
 import { Subject } from 'rxjs';
 import NiconicoDownloader from '../domain/NiconicoDownloader';
 import NiconicoMylist from '../domain/NiconicoMylist';
@@ -59,6 +59,7 @@ export default class TransferTaskWorker {
     const downloader = new NiconicoDownloader(
       configurationRepo,
       niconico,
+      powerSaveBlocker,
     );
     downloader.progressUpdated.subscribe(({ videoId, progress }) => {
       this.message.next(`${videoId} ダウンロード中: ${Math.floor(progress * 100)}%`);
