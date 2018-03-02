@@ -28,7 +28,7 @@ export default class NiconicoVideo {
       thumb.title[0],
       thumb.description[0],
       thumb.first_retrieve[0],
-      thumb.tags[0].tag.filter((x: any) => x.$.category != null)[0],
+      thumb.tags[0].tag.filter((x: any) => x.$ != null && x.$.category != null)[0],
       thumb.tags[0].tag.map((x: any) => typeof x === 'string' ? x : x._),
       thumb.thumbnail_url[0],
       thumb.watch_url[0],
