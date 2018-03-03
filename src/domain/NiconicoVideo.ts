@@ -1,5 +1,17 @@
 import xml2js from 'xml2js';
 
+async function parseXMLFromString(xmlString: string) {
+  return new Promise<any>((resolve, reject) => {
+    xml2js.parseString(xmlString, (err, result) => {
+      if (err != null) {
+        reject(err);
+        return;
+      }
+      resolve(result);
+    });
+  });
+}
+
 export default class NiconicoVideo {
   constructor(
     readonly title: string,
@@ -14,15 +26,7 @@ export default class NiconicoVideo {
 
   // http://ext.nicovideo.jp/api/getthumbinfo/*
   static async fromGetThumbInfoXML(xmlString: string) {
-    const xmlDocument: any = await new Promise((resolve, reject) => {
-      xml2js.parseString(xmlString, (err, result) => {
-        if (err != null) {
-          reject(err);
-          return;
-        }
-        resolve(result);
-      });
-    });
+    const xmlDocument = await parseXMLFromString(xmlString);
     const thumb = xmlDocument.nicovideo_thumb_response.thumb[0];
     return new this(
       thumb.title[0],
@@ -97,4 +101,37 @@ function convertCategory(category: string | null) {
     ファッション: 22, // People & Blogs
   };
   return convertMap[category];
+}
+
+export function createDescription(
+  html: string,
+  replaceMap: { from: string, to: string }[],
+) {
+  const json = JSON.parse(
+    /data-api-data="(.*?)"/.exec(html)![1]
+      .replace(/&quot;/g, '\"'),
+  );
+  return replaceNiconicoURL(
+    unescapeOriginalDescription(json.video.originalDescription),
+    replaceMap,
+  );
+}
+
+function unescapeOriginalDescription(originalDescription: string) {
+  return originalDescription
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/<br \/>/g, '\n')
+    .replace(/<.+?>/g, '');
+}
+
+function replaceNiconicoURL(
+  description: string,
+  replaceMap: { from: string, to: string }[],
+) {
+  for (const replace of replaceMap) {
+    // tslint:disable-next-line:no-parameter-reassignment
+    description = description.replace(new RegExp(replace.from, 'g'), replace.to);
+  }
+  return description;
 }

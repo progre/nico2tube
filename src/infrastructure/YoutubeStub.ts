@@ -6,17 +6,22 @@ export default class YoutubeStub {
   }
 
   async uploadVideo(
-    _: string,
-    __: string,
-    ___: Snippet,
-    ____: PrivacyStatus,
-    _____: { progress(progress: number): void; },
+    filePath: string,
+    thumbnailFilePath: string,
+    snippet: Snippet,
+    privacyStatus: PrivacyStatus,
+    progressReceiver: { progress(progress: number): void; },
   ) {
     process.stdout.write('upload\n');
     return '';
   }
 
-  async createPlaylist(_: Playlist, __: PrivacyStatus) {
+  async updateVideoDescription(videoId: string, description: string) {
+    process.stdout.write('updateVideoDescription\n');
+  }
+
+  async createPlaylist(playlist: Playlist, privacyStatus: PrivacyStatus) {
     process.stdout.write('createPlaylist\n');
+    return '';
   }
 }

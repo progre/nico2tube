@@ -1,6 +1,9 @@
 import fs from 'fs';
 import fetch from 'node-fetch';
+import util from 'util';
 const progressStream = require('progress-stream');
+
+const stat = util.promisify(fs.stat);
 
 export default class Niconico {
   async getGetThumbInfo(videoId: string) {
@@ -54,6 +57,14 @@ export default class Niconico {
     };
   }
 
+  async getWatchHTML(videoId: string) {
+    const res = await fetch(`http://www.nicovideo.jp/watch/${videoId}`);
+    if (res.status !== 200) {
+      throw new Error();
+    }
+    return res.text();
+  }
+
   async download(
     cookie: string,
     videoId: string,
@@ -77,8 +88,9 @@ export default class Niconico {
     if (mainAccessResult.status !== 200) {
       throw new Error();
     }
+    const contentLength = parseInt(mainAccessResult.headers.get('content-length'), 10);
     const str = progressStream({
-      length: mainAccessResult.headers.get('content-length'),
+      length: contentLength,
       time: 250,
     });
     str.on('progress', (progress: any) => {
@@ -94,6 +106,10 @@ export default class Niconico {
         .on('error', (e: Error) => { reject(e); })
         .on('finish', () => { resolve(); });
     });
+    const stats = await stat(filePath);
+    if (stats.size !== contentLength) {
+      throw new Error('Download failed');
+    }
   }
 
   async downloadThumbnail(

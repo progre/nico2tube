@@ -11,6 +11,7 @@ const parseString = async (xml: string) => new Promise<any>((resolve, reject) =>
 
 export default class NiconicoMylist {
   private constructor(
+    readonly id: string,
     readonly name: string,
     readonly description: string,
     readonly items: ReadonlyArray<{
@@ -20,12 +21,13 @@ export default class NiconicoMylist {
   ) {
   }
 
-  static async fromAPIXML(mylistXML: string) {
+  static async fromAPIXML(mylistId: string, mylistXML: string) {
     const xmlDocument: any = await parseString(mylistXML);
     if (xmlDocument.rss.channel[0].title[0] == null) {
       throw new Error('invalid mylist');
     }
     return new this(
+      mylistId,
       /マイリスト (.+)‐ニコニコ動画/.exec(xmlDocument.rss.channel[0].title[0])![1],
       xmlDocument.rss.channel[0].description[0],
       await Promise.all((<any[]>xmlDocument.rss.channel[0].item).map(async (x: any) => {
@@ -36,4 +38,12 @@ export default class NiconicoMylist {
       })),
     );
   }
+}
+
+export function parseMylistURL(url: string) {
+  const m = /http:\/\/www\.nicovideo\.jp\/mylist\/(.+)/.exec(url);
+  if (m == null || m[1] == null || m[1].length < 1) {
+    throw new Error('invalid url');
+  }
+  return m[1];
 }

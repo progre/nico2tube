@@ -1,55 +1,21 @@
+// tslint:disable-next-line:no-implicit-dependencies
 import electron from 'electron';
 const electronGoogleOauth = require('electron-google-oauth');
 const googleOAuth = electronGoogleOauth(electron.BrowserWindow);
 import fs from 'fs';
 const encryptor = require('simple-encryptor')('2P54vcTFvrbvf6ga');
+import util from 'util';
+import {
+  insertPlaylist,
+  insertPlaylistItem,
+  insertVideo,
+  setThumbnail,
+  updatePlaylist,
+  updateVideo,
+} from './PromisifiedYoutubeAPI';
 const youtubeAPI = require('youtube-api');
 
-const statFile = async (filePath: string) => new Promise<fs.Stats>((resolve, reject) => {
-  fs.stat(filePath, (err, data) => {
-    if (err != null) {
-      reject(err);
-      return;
-    }
-    resolve(data);
-  });
-});
-const updateVideo = async (params: any) => new Promise((resolve, reject) => {
-  youtubeAPI.videos.update(params, (err: Error, data: any) => {
-    if (err != null) {
-      reject(err);
-      return;
-    }
-    resolve(data);
-  });
-});
-const updatePlaylist = async (params: any) => new Promise((resolve, reject) => {
-  youtubeAPI.playlists.update(params, (err: Error, data: any) => {
-    if (err != null) {
-      reject(err);
-      return;
-    }
-    resolve(data);
-  });
-});
-const insertPlaylist = async (params: any) => new Promise<any>((resolve, reject) => {
-  youtubeAPI.playlists.insert(params, (err: Error, data: any) => {
-    if (err != null) {
-      reject(err);
-      return;
-    }
-    resolve(data);
-  });
-});
-const insertPlaylistItem = async (params: any) => new Promise((resolve, reject) => {
-  youtubeAPI.playlistItems.insert(params, (err: Error, data: any) => {
-    if (err != null) {
-      reject(err);
-      return;
-    }
-    resolve(data);
-  });
-});
+const statFile = util.promisify(fs.stat);
 
 export type PrivacyStatus = 'public' | 'private' | 'unlisted';
 
@@ -112,38 +78,47 @@ export default class Youtube {
         throw e;
       }
     }
-    const params = {
-      part: 'snippet,status',
-      resource: {
-        snippet,
-        status: { privacyStatus },
+    const { id } = await insertVideo(
+      {
+        part: 'snippet,status',
+        resource: {
+          snippet,
+          status: { privacyStatus },
+        },
+        media: { body: fs.createReadStream(filePath) },
       },
-      media: { body: fs.createReadStream(filePath) },
-    };
-    const { id } = await new Promise<any>((resolve, reject) => {
-      let timer: any;
-      const req = youtubeAPI.videos.insert(params, (err: any, data: any) => {
-        clearInterval(timer);
-        if (err != null) {
-          reject(err);
-          return;
-        }
-        resolve(data);
-      });
-      timer = setInterval(
-        () => { progressReceiver.progress(req.req.connection._bytesDispatched / size); },
-        250,
-      );
-    });
+      size,
+      progressReceiver,
+    );
     if (typeof id !== 'string') {
       throw new Error('upload failed');
     }
-    await uploadThumbnail(id, thumbnailFilePath);
+    await setThumbnail({
+      videoId: id,
+      media: { body: fs.createReadStream(thumbnailFilePath) },
+    });
     return id;
   }
 
+  async updateVideoDescription(videoId: string, description: string) {
+    await updateVideo({
+      part: 'snippet',
+      resource: {
+        id: videoId,
+        snippet: { description },
+      },
+    });
+  }
+
   async createPlaylist(playlist: Playlist, privacyStatus: PrivacyStatus) {
-    const playlistParams = {
+    try { // 権限チェック
+      await updatePlaylist({ part: 'snippet' });
+    } catch (e) {
+      if (e.code === 401) {
+        throw e;
+      }
+    }
+    const { id } = await insertPlaylist({
       part: 'snippet,status',
       resource: {
         snippet: {
@@ -153,39 +128,14 @@ export default class Youtube {
         },
         status: { privacyStatus },
       },
-    };
-    try { // 権限チェック
-      await updatePlaylist({ part: 'snippet' });
-    } catch (e) {
-      if (e.code === 401) {
-        throw e;
-      }
-    }
-    const { id } = await insertPlaylist(playlistParams);
+    });
     if (typeof id !== 'string') {
       throw new Error('creating playlist failed');
     }
     for (const item of playlist.items) {
-      const itemParams = {
-        part: 'snippet,contentDetails',
-        resource: {
-          snippet: {
-            playlistId: id,
-            resourceId: {
-              kind: 'youtube#video',
-              videoId: item.videoId,
-            },
-            // position:,
-          },
-          contentDetails: {
-            note: item.note,
-            // startAt:,
-            // endAt:,
-          },
-        },
-      };
-      await insertPlaylistItem(itemParams);
+      await createPlaylistItem(id, item.videoId, item.note);
     }
+    return id;
   }
 }
 
@@ -209,17 +159,25 @@ async function getAccessToken() {
   }
 }
 
-async function uploadThumbnail(videoId: string, filePath: string) {
-  await new Promise((resolve, reject) => {
-    youtubeAPI.thumbnails.set(
-      { videoId, media: { body: fs.createReadStream(filePath) } },
-      (err: any, _: any) => {
-        if (err != null) {
-          reject(err);
-          return;
-        }
-        resolve();
+async function createPlaylistItem(
+  playlistId: string,
+  videoId: string,
+  note: string,
+) {
+  const itemParams = {
+    part: 'snippet,contentDetails',
+    resource: {
+      snippet: {
+        playlistId,
+        resourceId: { videoId, kind: 'youtube#video' },
+        // position:,
       },
-    );
-  });
+      contentDetails: {
+        note,
+        // startAt:,
+        // endAt:,
+      },
+    },
+  };
+  await insertPlaylistItem(itemParams);
 }

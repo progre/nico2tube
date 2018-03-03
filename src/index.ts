@@ -40,7 +40,7 @@ function listenDomain(
     webContents.send('message', { message });
   });
   transferTaskWorker.error.subscribe((e) => {
-    console.error(e.stack || e);
+    console.error(e.stack);
     webContents.send('addError', { message: e.message });
   });
   // transferTaskWorker.queueUpdated.subscribe(() => {

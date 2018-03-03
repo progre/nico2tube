@@ -33,6 +33,10 @@ export default class NiconicoStub {
     };
   }
 
+  async getWatchHTML() {
+    return '';
+  }
+
   async download(
     _: string,
     __: string,
