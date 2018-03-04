@@ -16,8 +16,8 @@ export default class YoutubeStub {
     return '';
   }
 
-  async updateVideoDescription(videoId: string, description: string) {
-    process.stdout.write('updateVideoDescription\n');
+  async updateVideo(videoId: string, snippet: Snippet) {
+    process.stdout.write('updateVideo\n');
   }
 
   async createPlaylist(playlist: Playlist, privacyStatus: PrivacyStatus) {

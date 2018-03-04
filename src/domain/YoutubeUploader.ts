@@ -8,10 +8,14 @@ import SequentialWorker from './SequentialWorker';
 export default class YoutubeUploader {
   private readonly sequentialWorker = new SequentialWorker();
 
-  authenticationRequired = new Subject();
-  progressUpdated = new Subject<{ niconicoVideoId: string; progress: number; }>();
-  uploaded = new Subject<{ niconicoVideoId: string, youtubeVideoId: string }>();
-  error = this.sequentialWorker.error;
+  readonly authenticationRequired = new Subject();
+  readonly progressUpdated = new Subject<{ niconicoVideoId: string; progress: number; }>();
+  readonly uploaded = new Subject<{
+    niconicoVideoId: string;
+    youtubeVideoId: string;
+    snippet: Snippet;
+  }>();
+  readonly error = this.sequentialWorker.error;
 
   constructor(
     private readonly youtube: Youtube,
@@ -39,7 +43,7 @@ export default class YoutubeUploader {
             },
           },
         );
-        this.uploaded.next({ niconicoVideoId, youtubeVideoId: videoId });
+        this.uploaded.next({ niconicoVideoId, snippet, youtubeVideoId: videoId });
       },
     );
   }

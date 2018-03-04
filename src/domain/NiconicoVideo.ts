@@ -25,14 +25,14 @@ export default class NiconicoVideo {
   }
 
   // http://ext.nicovideo.jp/api/getthumbinfo/*
-  static async fromGetThumbInfoXML(xmlString: string) {
+  static async fromGetThumbInfoXMLAndWatchHTML(xmlString: string, htmlString: string) {
     const xmlDocument = await parseXMLFromString(xmlString);
     const thumb = xmlDocument.nicovideo_thumb_response.thumb[0];
     return new this(
       thumb.title[0],
-      thumb.description[0],
+      createDescription(htmlString, []),
       thumb.first_retrieve[0],
-      thumb.tags[0].tag.filter((x: any) => x.$ != null && x.$.category != null)[0],
+      thumb.tags[0].tag.filter((x: any) => x.$ != null && x.$.category != null)[0]._,
       thumb.tags[0].tag.map((x: any) => typeof x === 'string' ? x : x._),
       thumb.thumbnail_url[0],
       thumb.watch_url[0],
@@ -47,10 +47,6 @@ export default class NiconicoVideo {
       categoryId: convertCategory(this.category),
     };
   }
-
-  // http://dic.nicovideo.jp/a/カテゴリタグ
-  // https://developers.google.com/youtube/v3/docs/videoCategories/list#try-it
-  //   part=id,snippet regionCode=JP
 }
 
 export function toVideoId(url: string) {
@@ -62,6 +58,9 @@ export function toVideoId(url: string) {
   return regExpArray[1];
 }
 
+// http://dic.nicovideo.jp/a/カテゴリタグ
+// https://developers.google.com/youtube/v3/docs/videoCategories/list#try-it
+//   part=id,snippet regionCode=JP
 // tslint:disable-next-line:cyclomatic-complexity
 function convertCategory(category: string | null) {
   if (category == null) {
@@ -125,7 +124,7 @@ function unescapeOriginalDescription(originalDescription: string) {
     .replace(/<.+?>/g, '');
 }
 
-function replaceNiconicoURL(
+export function replaceNiconicoURL(
   description: string,
   replaceMap: { from: string, to: string }[],
 ) {

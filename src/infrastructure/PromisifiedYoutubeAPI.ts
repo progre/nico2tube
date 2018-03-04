@@ -1,4 +1,5 @@
 const youtubeAPI = require('youtube-api');
+import util from 'util';
 
 export async function insertVideo(
   params: any,
@@ -10,6 +11,7 @@ export async function insertVideo(
     const req = youtubeAPI.videos.insert(params, (err: any, data: any) => {
       clearInterval(timer);
       if (err != null) {
+        err.message += ' (function: insertVideo)';
         reject(err);
         return;
       }
@@ -24,18 +26,34 @@ export async function insertVideo(
   });
 }
 
-export const updateVideo = promisify(youtubeAPI.videos.update);
-export const updatePlaylist = promisify(youtubeAPI.playlists.update);
-export const insertPlaylist = promisify(youtubeAPI.playlists.insert);
-export const insertPlaylistItem = promisify(youtubeAPI.playlistItems.insert);
-export const setThumbnail = promisify(youtubeAPI.thumbnails.set);
+/**
+ * 権限チェック
+ */
+export const checkAuth = (() => {
+  const update = util.promisify(youtubeAPI.playlists.update);
+  return async () => {
+    try {
+      await update({ part: 'snippet' });
+    } catch (e) {
+      if (e.code === 401) {
+        throw e;
+      }
+    }
+  };
+})();
 
-function promisify(func: Function) {
+export const updateVideo = promisify('updateVideo', youtubeAPI.videos.update);
+export const insertPlaylist = promisify('insertPlaylist', youtubeAPI.playlists.insert);
+export const insertPlaylistItem = promisify('insertPlaylistItem', youtubeAPI.playlistItems.insert);
+export const setThumbnail = promisify('setThumbnail', youtubeAPI.thumbnails.set);
+
+function promisify(name: string, func: Function) {
   return async (params: any) => new Promise<any>((resolve, reject) => {
     func(params, (err: any, data: any) => {
       if (err != null) {
-        console.error(JSON.stringify(err));
-        reject(new Error(err.message));
+        console.error(JSON.stringify(err), JSON.stringify(params));
+        err.message += ` (function: ${name})`;
+        reject(err);
         return;
       }
       resolve(data);

@@ -2,27 +2,16 @@ import cron from 'cron';
 // tslint:disable-next-line:no-implicit-dependencies
 import electron, { powerSaveBlocker } from 'electron';
 import { Subject } from 'rxjs';
+import MutablePlaylist from '../domain/MutablePlaylist';
 import NiconicoDownloader from '../domain/NiconicoDownloader';
 import NiconicoMylist, { parseMylistURL } from '../domain/NiconicoMylist';
-import NiconicoVideo, { createDescription } from '../domain/NiconicoVideo';
+import NiconicoVideo, { replaceNiconicoURL } from '../domain/NiconicoVideo';
 import YoutubeUploader from '../domain/YoutubeUploader';
 import ConfigurationRepo from '../infrastructure/ConfigurationRepo';
 import Niconico from '../infrastructure/Niconico';
 import NiconicoStub from '../infrastructure/NiconicoStub';
-import Youtube, { Playlist, PrivacyStatus } from '../infrastructure/Youtube';
+import Youtube, { Playlist, PrivacyStatus, Snippet } from '../infrastructure/Youtube';
 import YoutubeStub from '../infrastructure/YoutubeStub';
-
-export interface MutablePlaylist {
-  niconicoMylistId: string;
-  title: string;
-  description: string;
-  tags: string[];
-  items: {
-    niconicoVideoId: string;
-    note: string;
-    videoId?: string;
-  }[];
-}
 
 export default class TransferTaskWorker {
   private readonly configurationRepo: ConfigurationRepo;
@@ -83,9 +72,9 @@ export default class TransferTaskWorker {
     uploader.progressUpdated.subscribe(({ niconicoVideoId, progress }) => {
       this.message.next(`${niconicoVideoId} アップロード中: ${Math.floor(progress * 100)}%`);
     });
-    uploader.uploaded.subscribe(async ({ niconicoVideoId, youtubeVideoId }) => {
+    uploader.uploaded.subscribe(async ({ niconicoVideoId, youtubeVideoId, snippet }) => {
       try {
-        await this.afterUpload(niconicoVideoId, youtubeVideoId);
+        await this.afterUpload(niconicoVideoId, youtubeVideoId, snippet);
       } catch (e) {
         this.error.next(e);
       }
@@ -111,7 +100,7 @@ export default class TransferTaskWorker {
   private async enqueueMylist(niconicoURL: string) {
     const mylistId = parseMylistURL(niconicoURL);
     const mylist = await this.fetchMylist(mylistId);
-    this.playlists.push(toPlaylist(mylist));
+    this.playlists.push(MutablePlaylist.fromMylist(mylist));
     mylist.items.forEach((x) => {
       this.niconicoDownloader.enqueue(`http://www.nicovideo.jp/watch/${x.videoId}`);
     });
@@ -134,8 +123,10 @@ export default class TransferTaskWorker {
   private async afterDownload(videoId: string, filePath: string) {
     this.message.next(`${videoId} ダウンロード完了`);
     const getThimbInfoXML = await this.niconico.getGetThumbInfo(videoId);
-    const niconicoVideo = await NiconicoVideo.fromGetThumbInfoXML(
+    const watchHTML = await this.niconico.getWatchHTML(videoId);
+    const niconicoVideo = await NiconicoVideo.fromGetThumbInfoXMLAndWatchHTML(
       getThimbInfoXML,
+      watchHTML,
     );
     const conf = await this.configurationRepo.get();
     const thumbnailFilePath = await this.niconico.downloadThumbnail(
@@ -151,7 +142,7 @@ export default class TransferTaskWorker {
     );
   }
 
-  private async afterUpload(niconicoVideoId: string, youtubeVideoId: string) {
+  private async afterUpload(niconicoVideoId: string, youtubeVideoId: string, snippet: Snippet) {
     this.message.next(`${niconicoVideoId} アップロード完了`);
     for (const playlist of this.playlists) {
       const item = playlist.items.find(x => x.niconicoVideoId === niconicoVideoId);
@@ -159,39 +150,37 @@ export default class TransferTaskWorker {
         continue;
       }
       item.videoId = youtubeVideoId;
+      item.videoSnippet = snippet;
     }
     const completedPlaylists = this.playlists
       .filter(x => x.items.every(y => y.videoId != null));
     for (const playlist of completedPlaylists) {
-      const playlistId = await this.youtube.createPlaylist(
-        <Playlist>playlist,
-        this.privacyStatus,
-      );
-      const idx = this.playlists.indexOf(playlist);
-      if (idx < 0) {
-        throw new Error('logic error');
-      }
-      this.playlists.splice(idx, 1);
-      this.message.next(`プレイリスト作成: ${playlist.title}`);
-      for (const item of playlist.items) {
-        const watchHTML = await this.niconico.getWatchHTML(item.niconicoVideoId);
-        await this.youtube.updateVideoDescription(
-          item.videoId!,
-          createDescription(
-            watchHTML,
-            [
-              {
-                from: `mylist/${playlist.niconicoMylistId}`,
-                to: `https://www.youtube.com/playlist?list=${playlistId}`,
-              },
-              ...playlist.items.map(x => ({
-                from: x.niconicoVideoId,
-                to: `https://www.youtube.com/watch?v=${x.videoId}`,
-              })),
-            ],
+      await this.createPlaylist(playlist);
+    }
+  }
+
+  private async createPlaylist(playlist: MutablePlaylist) {
+    const playlistId = await this.youtube.createPlaylist(
+      <Playlist>playlist,
+      this.privacyStatus,
+    );
+    const idx = this.playlists.indexOf(playlist);
+    if (idx < 0) {
+      throw new Error('logic error');
+    }
+    this.playlists.splice(idx, 1);
+    this.message.next(`プレイリスト作成: ${playlist.title}`);
+    for (const item of playlist.items) {
+      await this.youtube.updateVideo(
+        item.videoId!,
+        {
+          ...item.videoSnippet!,
+          description: replaceNiconicoURL(
+            item.videoSnippet!.description,
+            playlist.toReplaceMap(playlistId),
           ),
-        );
-      }
+        },
+      );
     }
   }
 
@@ -201,17 +190,4 @@ export default class TransferTaskWorker {
     });
     job.start();
   }
-}
-
-function toPlaylist(mylist: NiconicoMylist): MutablePlaylist {
-  return {
-    niconicoMylistId: mylist.id,
-    title: mylist.name,
-    description: mylist.description,
-    tags: [],
-    items: mylist.items.map(x => ({
-      niconicoVideoId: x.videoId,
-      note: x.description,
-    })),
-  };
 }

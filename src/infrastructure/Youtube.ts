@@ -6,11 +6,11 @@ import fs from 'fs';
 const encryptor = require('simple-encryptor')('2P54vcTFvrbvf6ga');
 import util from 'util';
 import {
+  checkAuth,
   insertPlaylist,
   insertPlaylistItem,
   insertVideo,
   setThumbnail,
-  updatePlaylist,
   updateVideo,
 } from './PromisifiedYoutubeAPI';
 const youtubeAPI = require('youtube-api');
@@ -71,13 +71,7 @@ export default class Youtube {
     progressReceiver: { progress(progress: number): void; },
   ) {
     const { size } = await statFile(filePath);
-    try { // 権限チェック
-      await updateVideo({ part: 'snippet' });
-    } catch (e) {
-      if (e.code === 401) {
-        throw e;
-      }
-    }
+    await checkAuth();
     const { id } = await insertVideo(
       {
         part: 'snippet,status',
@@ -100,24 +94,18 @@ export default class Youtube {
     return id;
   }
 
-  async updateVideoDescription(videoId: string, description: string) {
+  async updateVideo(videoId: string, snippet: Snippet) {
     await updateVideo({
       part: 'snippet',
       resource: {
+        snippet,
         id: videoId,
-        snippet: { description },
       },
     });
   }
 
   async createPlaylist(playlist: Playlist, privacyStatus: PrivacyStatus) {
-    try { // 権限チェック
-      await updatePlaylist({ part: 'snippet' });
-    } catch (e) {
-      if (e.code === 401) {
-        throw e;
-      }
-    }
+    await checkAuth();
     const { id } = await insertPlaylist({
       part: 'snippet,status',
       resource: {
