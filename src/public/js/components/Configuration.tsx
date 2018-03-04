@@ -42,7 +42,7 @@ export default function Configuration(props: {
         <FormLabel component="legend">YouTube</FormLabel>
         <div style={{ textAlign: 'center' }}>
           <Button
-            raised
+            variant="raised"
             style={{ display: 'inline-block' }}
             onClick={props.onYoutubeAuthenticateClick}
           >authenticate</Button>

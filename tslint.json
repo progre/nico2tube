@@ -7,6 +7,7 @@
     "match-default-export-name": false,
     "no-http-string": false,
     "no-object-literal-type-assertion": false,
+    "strict-boolean-expressions": false,
     "type-literal-delimiter": false
   }
 }

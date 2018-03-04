@@ -29,7 +29,7 @@ export default class TextAdd extends React.Component<Props> {
         </Grid>
         <Grid item xs={3}>
           <Button
-            fab
+            variant="fab"
             mini
             style={{ display: 'inline-block' }}
             onClick={this.onClick}
