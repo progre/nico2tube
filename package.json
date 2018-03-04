@@ -26,7 +26,7 @@
     "@commitlint/cli": "^6.1.2",
     "@commitlint/config-conventional": "^6.1.2",
     "@progre/electron-packer": "^0.1.2",
-    "@progre/tslint-config": "~5.6.0",
+    "@progre/tslint-config": "~5.8.0",
     "@types/chai": "^4.0.10",
     "@types/cron": "^1.2.1",
     "@types/mocha": "^2.2.44",
@@ -54,11 +54,11 @@
     "webpack": "^3.11.0"
   },
   "files": [
-    "lib"
+    "dist"
   ],
   "homepage": "https://github.com/progre/typescript-boilerplate#readme",
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "private": true,
   "repository": {
     "type": "git",
@@ -66,7 +66,7 @@
   },
   "scripts": {
     "build": "run-s clean release-build",
-    "clean": "del-cli lib tmp",
+    "clean": "del-cli dist tmp",
     "commitmsg": "commitlint -e $GIT_PARAMS",
     "debug-build": "cross-env NODE_ENV=development webpack --progress",
     "package": "electron-packer",
@@ -75,5 +75,5 @@
     "test": "mocha --require ts-node/register --watch-extensions ts,tsx \"test/**/*.{ts,tsx}\"",
     "watch": "cross-env NODE_ENV=development webpack --progress --watch"
   },
-  "typings": "lib/index.d.ts"
+  "typings": "dist/index.d.ts"
 }
