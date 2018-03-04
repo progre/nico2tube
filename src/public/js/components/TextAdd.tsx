@@ -2,7 +2,7 @@ import { Button, Grid, TextField } from 'material-ui';
 import React from 'react';
 
 export interface Props {
-  style: React.CSSProperties;
+  style?: React.CSSProperties;
 
   onAddClick(value: string): void;
 }
@@ -20,14 +20,14 @@ export default class TextAdd extends React.Component<Props> {
   render() {
     return (
       <Grid container spacing={24} style={this.props.style}>
-        <Grid item xs={9}>
+        <Grid item xs={10}>
           <TextField
             inputRef={this.inputRef}
             label="Niconico URL"
             fullWidth={true}
           />
         </Grid>
-        <Grid item xs={3}>
+        <Grid item xs={2} style={{ textAlign: 'center' }}>
           <Button
             variant="fab"
             mini

@@ -27,8 +27,3 @@ export const ADD_ERROR = 'ADD_ERROR';
 export function addError(message: string) {
   return { type: ADD_ERROR, payload: message };
 }
-
-export const SET_QUEUE = 'SET_QUEUE';
-export function setQueue(queue: ReadonlyArray<string>) {
-  return { type: SET_QUEUE, payload: queue };
-}

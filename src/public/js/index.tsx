@@ -1,10 +1,11 @@
+// tslint:disable-next-line:no-implicit-dependencies
 import electron from 'electron';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import * as redux from 'redux';
 import * as reduxPersist from 'redux-persist';
-import { addError, setMessage, setQueue } from './actions/actions';
+import { addError, setMessage } from './actions/actions';
 import App from './containers/App';
 import reducer from './reducers/reducer';
 import { createInitialState, State } from './state';
@@ -42,10 +43,6 @@ function listenIPC(store: redux.Store<State>) {
   electron.ipcRenderer.on('addError', (_: any, arg: { message: string }) => {
     if (arg.message == null) { throw new Error('logic error'); }
     store.dispatch(addError(arg.message));
-  });
-  electron.ipcRenderer.on('setQueue', (_: any, arg: { queue: ReadonlyArray<string> }) => {
-    if (arg.queue == null) { throw new Error('logic error'); }
-    store.dispatch(setQueue(arg.queue));
   });
 }
 

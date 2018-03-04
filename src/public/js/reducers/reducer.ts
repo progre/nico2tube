@@ -42,11 +42,6 @@ function taskListReducer(
         ...state,
         errors: [...state.errors, action.payload],
       };
-    case actions.SET_QUEUE:
-      return {
-        ...state,
-        tasks: action.payload,
-      };
     default:
       return state;
   }

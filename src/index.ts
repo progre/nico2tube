@@ -25,8 +25,8 @@ function start() {
 
 function createWindow() {
   return new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 420,
+    height: 680,
     resizable: true,
     show: true,
   });
@@ -43,9 +43,6 @@ function listenDomain(
     console.error(e.stack);
     webContents.send('addError', { message: e.message });
   });
-  // transferTaskWorker.queueUpdated.subscribe(() => {
-  //   webContents.send('setQueue', { queue: niconicoDownloader.queue() });
-  // });
 }
 
 function listenIPC(transferTaskWorker: TransferTaskWorker) {

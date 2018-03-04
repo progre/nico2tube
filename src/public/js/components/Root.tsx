@@ -2,13 +2,11 @@ import { TextField } from 'material-ui';
 import React from 'react';
 import ConfigurationDomain from '../../../domain/Configuration';
 import Configuration from './Configuration';
-import ErrorList from './ErrorList';
-import TaskList from './TaskList';
+import TextAdd from './TextAdd';
 
 export interface Props {
   configuration: ConfigurationDomain;
   taskList: {
-    tasks: ReadonlyArray<string>;
     errors: ReadonlyArray<string>;
     message: string;
   };
@@ -23,15 +21,22 @@ export interface Props {
 export default class Root extends React.Component<Props> {
   render() {
     return (
-      <>
+      <div style={{ cursor: 'default', userSelect: 'none' }}>
         <Configuration {...this.props.configuration} {...this.props} />
-        <TaskList
-          tasks={this.props.taskList.tasks}
-          onAddClick={this.props.onNiconicoURLAdd}
+        <TextAdd style={{ marginTop: '60px' }} onAddClick={this.props.onNiconicoURLAdd} />
+        <TextField disabled fullWidth={true} value={this.props.taskList.message} />
+        <TextField
+          disabled
+          error
+          multiline
+          fullWidth={true}
+          value={[...this.props.taskList.errors].reverse().join('\n')}
+          style={{
+            overflow: 'scroll',
+            display: this.props.taskList.errors.length <= 0 ? 'none' : null,
+          }}
         />
-        <TextField fullWidth={true} value={this.props.taskList.message} />
-        <ErrorList errors={this.props.taskList.errors} />
-      </>
+      </div>
     );
   }
 }

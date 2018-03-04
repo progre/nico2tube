@@ -7,7 +7,6 @@ export const initialState = {
     workingFolderPath: '',
   },
   taskList: {
-    tasks: <ReadonlyArray<string>>[],
     errors: <ReadonlyArray<string>>[],
     messsage: '',
   },
@@ -29,7 +28,6 @@ export function createInitialState(storedState: any): State {
     return {
       ...storedState,
       taskList: {
-        tasks: [],
         errors: [],
       },
     };
