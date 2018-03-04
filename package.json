@@ -57,7 +57,7 @@
     "lib"
   ],
   "homepage": "https://github.com/progre/typescript-boilerplate#readme",
-  "license": "CC0-1.0",
+  "license": "MIT",
   "main": "lib/index.js",
   "private": true,
   "repository": {
