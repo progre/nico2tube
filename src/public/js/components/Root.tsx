@@ -1,3 +1,4 @@
+import i18next from 'i18next';
 import { TextField } from 'material-ui';
 import React from 'react';
 import ConfigurationDomain from '../../../domain/Configuration';
@@ -30,7 +31,15 @@ export default class Root extends React.Component<Props> {
           error
           multiline
           fullWidth={true}
-          value={[...this.props.taskList.errors].reverse().join('\n')}
+          value={
+            [
+              ...this.props
+                .taskList
+                .errors
+                .map(internationalizeErrorMessage),
+            ]
+              .reverse().join('\n')
+          }
           style={{
             overflow: 'scroll',
             display: this.props.taskList.errors.length <= 0 ? 'none' : null,
@@ -39,4 +48,12 @@ export default class Root extends React.Component<Props> {
       </div>
     );
   }
+}
+
+function internationalizeErrorMessage(message: string) {
+  const m = /(.+)(: .+)/.exec(message);
+  if (m == null) {
+    return message;
+  }
+  return `${i18next.t(m[1])}${m[2]}`;
 }

@@ -1,5 +1,6 @@
 // tslint:disable-next-line:no-implicit-dependencies
 import electron from 'electron';
+import i18next from 'i18next';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
@@ -11,6 +12,16 @@ import reducer from './reducers/reducer';
 import { createInitialState, State } from './state';
 
 async function main() {
+  i18next.init({
+    lng: 'jp',
+    resources: {
+      jp: {
+        translation: {
+          'Invalid url': 'URLが無効です',
+        },
+      },
+    },
+  });
   const store = redux.createStore<State>(
     reducer,
     {} as any,
