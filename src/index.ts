@@ -41,13 +41,18 @@ function listenDomain(
   });
   transferTaskWorker.error.subscribe((e) => {
     console.error(e.stack);
-    webContents.send('addError', { message: e.message });
+    webContents.send('addError', {
+      message: `[${e.niconicoVideoId || ''}] ${e.message}`,
+    });
   });
 }
 
 function listenIPC(transferTaskWorker: TransferTaskWorker) {
   ipcMain.on('authenticateYoutube', async () => {
     await transferTaskWorker.authenticate();
+  });
+  ipcMain.on('retry', async () => {
+    await transferTaskWorker.retry();
   });
   ipcMain.on('addNiconicoURL', (_: any, { url }: { url: string }) => {
     transferTaskWorker.enqueue(url);

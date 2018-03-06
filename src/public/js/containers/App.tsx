@@ -28,6 +28,9 @@ function mapDispatchToProps(dispatch: Dispatch<{}>) {
       electron.ipcRenderer.send('addNiconicoURL', { url });
       dispatch(actions.clearURL());
     },
+    onRetryClick(_: React.MouseEvent<HTMLInputElement>) {
+      electron.ipcRenderer.send('retry');
+    },
   };
 }
 

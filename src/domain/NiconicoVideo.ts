@@ -28,11 +28,15 @@ export default class NiconicoVideo {
   static async fromGetThumbInfoXMLAndWatchHTML(xmlString: string, htmlString: string) {
     const xmlDocument = await parseXMLFromString(xmlString);
     const thumb = xmlDocument.nicovideo_thumb_response.thumb[0];
+    const category = (
+      thumb.tags[0].tag.filter((x: any) => x.$ != null && x.$.category != null)[0]
+      || { _: null }
+    )._;
     return new this(
       thumb.title[0],
       createDescription(htmlString, []),
       thumb.first_retrieve[0],
-      thumb.tags[0].tag.filter((x: any) => x.$ != null && x.$.category != null)[0]._,
+      category,
       thumb.tags[0].tag.map((x: any) => typeof x === 'string' ? x : x._),
       thumb.thumbnail_url[0],
       thumb.watch_url[0],

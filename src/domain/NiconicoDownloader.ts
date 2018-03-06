@@ -10,7 +10,7 @@ export default class NiconicoDownloader {
   private readonly sequentialWorker = new SequentialWorker();
   private powerSaveId: number | null = null;
 
-  readonly error = this.sequentialWorker.error;
+  readonly error = new Subject<Error & { niconicoVideoId?: string; }>();
   readonly progressUpdated = new Subject<{ videoId: string; progress: number; }>();
   readonly downloaded = new Subject<{ videoId: string; filePath: string; }>();
 
@@ -19,6 +19,10 @@ export default class NiconicoDownloader {
     private niconico: Niconico,
     private powerSaveBlocker: PowerSaveBlocker,
   ) {
+    this.sequentialWorker.error.subscribe((e) => {
+      (<any>e).niconicoVideoId = e.label;
+      this.error.next(<any>e);
+    });
   }
 
   enqueue(url: string) {

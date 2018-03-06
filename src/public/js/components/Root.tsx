@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { TextField } from 'material-ui';
+import { Button, TextField } from 'material-ui';
 import React from 'react';
 import ConfigurationDomain from '../../../domain/Configuration';
 import Configuration from './Configuration';
@@ -17,6 +17,7 @@ export interface Props {
   onWorkingFolderPathChange(e: React.ChangeEvent<HTMLInputElement>): void;
   onYoutubeAuthenticateClick(e: React.MouseEvent<HTMLInputElement>): void;
   onNiconicoURLAdd(value: string): void;
+  onRetryClick(e: React.MouseEvent<HTMLInputElement>): void;
 }
 
 export default class Root extends React.Component<Props> {
@@ -45,6 +46,15 @@ export default class Root extends React.Component<Props> {
             display: this.props.taskList.errors.length <= 0 ? 'none' : null,
           }}
         />
+        <div style={{ textAlign: 'center' }}>
+          <Button
+            variant="raised"
+            style={{ display: 'inline-block', marginTop: '1em' }}
+            onClick={this.props.onRetryClick}
+          >
+            Retry
+        </Button>
+        </div>
       </div>
     );
   }

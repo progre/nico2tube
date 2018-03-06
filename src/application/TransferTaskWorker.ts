@@ -23,7 +23,7 @@ export default class TransferTaskWorker {
   private readonly playlists: MutablePlaylist[] = [];
 
   message = new Subject<string>();
-  error = new Subject<Error>();
+  error = new Subject<Error & { niconicoVideoId?: string; }>();
 
   constructor(dryRun: boolean, webContents: electron.WebContents) {
     this.niconico = dryRun ? new NiconicoStub() : new Niconico();
@@ -55,12 +55,16 @@ export default class TransferTaskWorker {
       try {
         await this.afterDownload(videoId, filePath);
       } catch (e) {
+        if (e.niconicoVideoId == null) {
+          e.niconicoVideoId = videoId;
+        }
         this.error.next(e);
       }
     });
     downloader.error.subscribe((e) => {
       if (e.message === 'economy') {
         this.message.next('低画質モードのため中止しました。2:05に再開します。');
+        return;
       }
       this.error.next(e);
     });
@@ -85,6 +89,11 @@ export default class TransferTaskWorker {
 
   async authenticate() {
     await this.youtube.authenticate();
+    this.youtubeUploader.ready();
+  }
+
+  async retry() {
+    this.niconicoDownloader.ready();
     this.youtubeUploader.ready();
   }
 
@@ -152,6 +161,8 @@ export default class TransferTaskWorker {
       item.videoId = youtubeVideoId;
       item.videoSnippet = snippet;
     }
+
+    // TODO: リトライ可能にする
     const completedPlaylists = this.playlists
       .filter(x => x.items.every(y => y.videoId != null));
     for (const playlist of completedPlaylists) {

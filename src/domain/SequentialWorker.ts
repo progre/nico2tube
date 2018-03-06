@@ -4,7 +4,7 @@ export default class SequentialWorker {
   private list: ReadonlyArray<{ label: string; work(): Promise<void>; }> = [];
   private working = false;
 
-  error = new Subject<Error>();
+  error = new Subject<Error & { label: string; }>();
 
   length() {
     return this.list.length;
@@ -46,7 +46,12 @@ export default class SequentialWorker {
       return;
     }
     const item = this.list[0];
-    await item.work();
+    try {
+      await item.work();
+    } catch (e) {
+      e.label = item.label;
+      throw e;
+    }
     if (item !== this.list[0]) { throw new Error('logic error'); }
     this.list = this.list.slice(1); // workが通ったら次にシフト
     return this.workRecursive();
