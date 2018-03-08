@@ -42,6 +42,7 @@ export const checkAuth = (() => {
   };
 })();
 
+export const listVideos = promisify('listVideos', youtubeAPI.videos.list);
 export const updateVideo = promisify('updateVideo', youtubeAPI.videos.update);
 export const insertPlaylist = promisify('insertPlaylist', youtubeAPI.playlists.insert);
 export const insertPlaylistItem = promisify('insertPlaylistItem', youtubeAPI.playlistItems.insert);

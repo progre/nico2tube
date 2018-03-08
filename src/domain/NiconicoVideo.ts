@@ -28,7 +28,7 @@ export default class NiconicoVideo {
   static async fromGetThumbInfoXMLAndWatchHTML(xmlString: string, htmlString: string) {
     const xmlDocument = await parseXMLFromString(xmlString);
     const thumb = xmlDocument.nicovideo_thumb_response.thumb[0];
-    const category = (
+    const category: string | null = (
       thumb.tags[0].tag.filter((x: any) => x.$ != null && x.$.category != null)[0]
       || { _: null }
     )._;
@@ -60,6 +60,14 @@ export function toVideoId(url: string) {
     return null;
   }
   return regExpArray[1];
+}
+
+export function parseAPIData(html: string) {
+  const m = /data-api-data="(.*?)"/.exec(html);
+  if (m == null) {
+    return null;
+  }
+  return JSON.parse(m[1].replace(/&quot;/g, '\"'));
 }
 
 // http://dic.nicovideo.jp/a/カテゴリタグ
@@ -106,14 +114,11 @@ function convertCategory(category: string | null) {
   return convertMap[category];
 }
 
-export function createDescription(
+function createDescription(
   html: string,
   replaceMap: { from: string, to: string }[],
 ) {
-  const json = JSON.parse(
-    /data-api-data="(.*?)"/.exec(html)![1]
-      .replace(/&quot;/g, '\"'),
-  );
+  const json = parseAPIData(html);
   return replaceNiconicoURL(
     unescapeOriginalDescription(json.video.originalDescription),
     replaceMap,

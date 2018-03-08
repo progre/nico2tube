@@ -42,7 +42,7 @@ function listenDomain(
   transferTaskWorker.error.subscribe((e) => {
     console.error(e.stack);
     webContents.send('addError', {
-      message: `[${e.niconicoVideoId || ''}] ${e.message}`,
+      message: `[${e.label || ''}] ${e.message}`,
     });
   });
 }

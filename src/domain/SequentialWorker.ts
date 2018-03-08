@@ -1,10 +1,11 @@
 import { Subject } from 'rxjs';
+import { ApplicationError } from './types';
 
 export default class SequentialWorker {
   private list: ReadonlyArray<{ label: string; work(): Promise<void>; }> = [];
   private working = false;
 
-  error = new Subject<Error & { label: string; }>();
+  error = new Subject<ApplicationError>();
 
   length() {
     return this.list.length;

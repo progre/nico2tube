@@ -10,6 +10,7 @@ import {
   insertPlaylist,
   insertPlaylistItem,
   insertVideo,
+  listVideos,
   setThumbnail,
   updateVideo,
 } from './PromisifiedYoutubeAPI';
@@ -95,11 +96,25 @@ export default class Youtube {
   }
 
   async updateVideo(videoId: string, snippet: Snippet) {
+    // preload snippet for categoryId
+    const { items } = await listVideos({
+      part: 'snippet',
+      id: videoId,
+    });
+    if (items.length !== 1) {
+      throw new Error(`Fetch video failed. id=${videoId} found=${items.length}`);
+    }
+
+    // remove null|undefined properties because these overwrites
+    const cleanSnippet = { ...snippet };
+    Object.keys(cleanSnippet)
+      .filter(key => (<any>cleanSnippet)[key] == null)
+      .forEach((key) => { delete (<any>cleanSnippet)[key]; });
     await updateVideo({
       part: 'snippet',
       resource: {
-        snippet,
         id: videoId,
+        snippet: { ...items[0].snippet, ...cleanSnippet },
       },
     });
   }

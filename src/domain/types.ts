@@ -28,3 +28,7 @@ export interface VideoTask {
   downloadProgress?: number;
   uploadProgress?: number;
 }
+
+export interface ApplicationError extends Error {
+  label?: string;
+}

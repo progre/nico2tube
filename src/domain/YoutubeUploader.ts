@@ -4,6 +4,7 @@ import Youtube, {
   Snippet,
 } from '../infrastructure/Youtube';
 import SequentialWorker from './SequentialWorker';
+import { ApplicationError } from './types';
 
 export default class YoutubeUploader {
   private readonly sequentialWorker = new SequentialWorker();
@@ -15,16 +16,12 @@ export default class YoutubeUploader {
     youtubeVideoId: string;
     snippet: Snippet;
   }>();
-  readonly error = new Subject<Error & { niconicoVideoId: string; }>();
+  readonly error: Subject<ApplicationError> = this.sequentialWorker.error;
 
   constructor(
     private readonly youtube: Youtube,
     private readonly privacyStatus: PrivacyStatus,
   ) {
-    this.sequentialWorker.error.subscribe((e) => {
-      (<any>e).niconicoVideoId = e.label;
-      this.error.next(<any>e);
-    });
   }
 
   ready() {

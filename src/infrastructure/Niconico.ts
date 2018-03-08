@@ -86,7 +86,7 @@ export default class Niconico {
       redirect: 'manual',
     });
     if (mainAccessResult.status !== 200) {
-      throw new Error();
+      throw new Error(`Fetch failed. url=${url} status=${mainAccessResult.status}`);
     }
     const contentLength = parseInt(mainAccessResult.headers.get('content-length'), 10);
     const str = progressStream({

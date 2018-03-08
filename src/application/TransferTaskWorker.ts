@@ -6,6 +6,7 @@ import MutablePlaylist from '../domain/MutablePlaylist';
 import NiconicoDownloader from '../domain/NiconicoDownloader';
 import NiconicoMylist, { parseMylistURL } from '../domain/NiconicoMylist';
 import NiconicoVideo, { replaceNiconicoURL } from '../domain/NiconicoVideo';
+import { ApplicationError } from '../domain/types';
 import YoutubeUploader from '../domain/YoutubeUploader';
 import ConfigurationRepo from '../infrastructure/ConfigurationRepo';
 import Niconico from '../infrastructure/Niconico';
@@ -23,7 +24,7 @@ export default class TransferTaskWorker {
   private readonly playlists: MutablePlaylist[] = [];
 
   message = new Subject<string>();
-  error = new Subject<Error & { niconicoVideoId?: string; }>();
+  error = new Subject<ApplicationError>();
 
   constructor(dryRun: boolean, webContents: electron.WebContents) {
     this.niconico = dryRun ? new NiconicoStub() : new Niconico();
@@ -55,8 +56,8 @@ export default class TransferTaskWorker {
       try {
         await this.afterDownload(videoId, filePath);
       } catch (e) {
-        if (e.niconicoVideoId == null) {
-          e.niconicoVideoId = videoId;
+        if (e.label == null) {
+          e.label = videoId;
         }
         this.error.next(e);
       }
