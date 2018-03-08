@@ -2,6 +2,8 @@ import { Snippet } from '../infrastructure/Youtube';
 import NiconicoMylist from './NiconicoMylist';
 
 export default class MutablePlaylist {
+  public youtubePlaylistId?: string;
+
   constructor(
     public readonly niconicoMylistId: string,
     public readonly title: string,
@@ -29,11 +31,14 @@ export default class MutablePlaylist {
     );
   }
 
-  toReplaceMap(playlistId: string) {
+  toReplaceMap() {
+    if (this.youtubePlaylistId == null) {
+      throw new Error('logic error');
+    }
     return [
       {
         from: `mylist/${this.niconicoMylistId}`,
-        to: `https://www.youtube.com/playlist?list=${playlistId}`,
+        to: `https://www.youtube.com/playlist?list=${this.youtubePlaylistId}`,
       },
       ...this.items.map(x => ({
         from: x.niconicoVideoId,

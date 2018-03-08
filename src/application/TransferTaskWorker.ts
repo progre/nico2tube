@@ -176,12 +176,14 @@ export default class TransferTaskWorker {
       <Playlist>playlist,
       this.privacyStatus,
     );
+    playlist.youtubePlaylistId = playlistId;
     const idx = this.playlists.indexOf(playlist);
     if (idx < 0) {
       throw new Error('logic error');
     }
     this.playlists.splice(idx, 1);
     this.message.next(`プレイリスト作成: ${playlist.title}`);
+    const replaceMap = playlist.toReplaceMap();
     for (const item of playlist.items) {
       await this.youtube.updateVideo(
         item.videoId!,
@@ -189,7 +191,7 @@ export default class TransferTaskWorker {
           ...item.videoSnippet!,
           description: replaceNiconicoURL(
             item.videoSnippet!.description,
-            playlist.toReplaceMap(playlistId),
+            replaceMap,
           ),
         },
       );
