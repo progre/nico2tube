@@ -25,7 +25,7 @@ export default class NiconicoVideo {
   }
 
   // http://ext.nicovideo.jp/api/getthumbinfo/*
-  static async fromGetThumbInfoXMLAndWatchHTML(xmlString: string, htmlString: string) {
+  static async fromGetThumbInfoXMLAndAPIData(xmlString: string, apiData: any) {
     const xmlDocument = await parseXMLFromString(xmlString);
     const thumb = xmlDocument.nicovideo_thumb_response.thumb[0];
     const category: string | null = (
@@ -34,7 +34,7 @@ export default class NiconicoVideo {
     )._;
     return new this(
       thumb.title[0],
-      createDescription(htmlString, []),
+      createDescription(apiData, []),
       thumb.first_retrieve[0],
       category,
       thumb.tags[0].tag.map((x: any) => typeof x === 'string' ? x : x._),
@@ -115,12 +115,11 @@ function convertCategory(category: string | null) {
 }
 
 function createDescription(
-  html: string,
+  apiData: any,
   replaceMap: { from: string, to: string }[],
 ) {
-  const json = parseAPIData(html);
   return replaceNiconicoURL(
-    unescapeOriginalDescription(json.video.originalDescription),
+    unescapeOriginalDescription(apiData.video.originalDescription),
     replaceMap,
   );
 }

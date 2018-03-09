@@ -31,6 +31,15 @@ export default class MutablePlaylist {
     );
   }
 
+  setYoutubeVideoToItem(niconicoVideoId: string, youtubeVideoId: string, snippet: Snippet) {
+    const item = this.items.find(x => x.niconicoVideoId === niconicoVideoId);
+    if (item == null) {
+      return;
+    }
+    item.videoId = youtubeVideoId;
+    item.videoSnippet = snippet;
+  }
+
   toReplaceMap() {
     if (this.youtubePlaylistId == null) {
       throw new Error('logic error');

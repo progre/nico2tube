@@ -4,7 +4,7 @@ import { Subject } from 'rxjs';
 import ConfigurationRepo from '../infrastructure/ConfigurationRepo';
 import Niconico from '../infrastructure/Niconico';
 import Configuration from './Configuration';
-import { parseAPIData, toVideoId } from './NiconicoVideo';
+import NiconicoVideo, { parseAPIData, toVideoId } from './NiconicoVideo';
 import SequentialWorker from './SequentialWorker';
 import { ApplicationError } from './types';
 
@@ -14,7 +14,12 @@ export default class NiconicoDownloader {
 
   readonly error: Subject<ApplicationError> = this.sequentialWorker.error;
   readonly progressUpdated = new Subject<{ videoId: string; progress: number; }>();
-  readonly downloaded = new Subject<{ videoId: string; filePath: string; }>();
+  readonly downloaded = new Subject<{
+    videoId: string;
+    niconicoVideo: NiconicoVideo;
+    videoPath: string;
+    thumbnailPath: string;
+  }>();
 
   constructor(
     private configurationRepo: ConfigurationRepo,
@@ -40,20 +45,42 @@ export default class NiconicoDownloader {
   }
 
   private async task(videoId: string) {
-    const url = await this.getURLFromWatchHTML(videoId);
-    const configuration = await this.configurationRepo.get();
+    const watchHTML = await this.niconico.getWatchHTML(videoId);
+    const apiData = parseAPIData(watchHTML);
+    if (apiData == null) {
+      throw new Error('Niconico movie maker isn\'t supported'); // TODO: 諦めるケース
+    }
+    const conf = await this.configurationRepo.get();
+
+    const videoPath = await this.downloadVideo(videoId, apiData, conf);
+    const niconicoVideo = await this.downloadMeta(videoId, apiData);
+    const thumbnailPath = await this.niconico.downloadThumbnail(
+      videoId,
+      niconicoVideo.thumbnailURL,
+      conf.workingFolderPath,
+    );
+    // 特にロールバックはなし
+
+    if (this.sequentialWorker.length() <= 1) { // 今処理しているのが最後なら止める
+      this.stopPowerSaving();
+    }
+    this.downloaded.next({ videoId, niconicoVideo, videoPath, thumbnailPath });
+  }
+
+  private async downloadVideo(videoId: string, apiData: any, conf: Configuration) {
+    // TODO: ログイン不要になったはず
     const sessionCookie = await this.niconico.createSessionCookie(
-      configuration.niconicoEmail,
-      configuration.niconicoPassword,
+      conf.niconicoEmail,
+      conf.niconicoPassword,
     );
     if (sessionCookie == null) {
       throw new Error('logging in failed');
     }
-    const filePath = `${configuration.workingFolderPath}/${videoId}`;
+    const filePath = `${conf.workingFolderPath}/${videoId}`;
     await this.niconico.download(
       sessionCookie,
       videoId,
-      url,
+      getURLFromAPIData(apiData),
       filePath,
       {
         progress: (progress: number) => {
@@ -61,10 +88,15 @@ export default class NiconicoDownloader {
         },
       },
     );
-    if (this.sequentialWorker.length() <= 1) { // 今処理しているのが最後なら止める
-      this.stopPowerSaving();
-    }
-    this.downloaded.next({ filePath, videoId });
+    return filePath;
+  }
+
+  private async downloadMeta(videoId: string, apiData: any) {
+    const getThimbInfoXML = await this.niconico.getGetThumbInfo(videoId);
+    return NiconicoVideo.fromGetThumbInfoXMLAndAPIData(
+      getThimbInfoXML,
+      apiData,
+    );
   }
 
   private startPowerSaving() {
@@ -97,17 +129,12 @@ export default class NiconicoDownloader {
     }
     return status.url;
   }
+}
 
-  private async getURLFromWatchHTML(videoId: string) {
-    const watchHTML = await this.niconico.getWatchHTML(videoId);
-    const json = parseAPIData(watchHTML);
-    if (json == null) {
-      throw new Error('Niconico movie maker isn\'t supported');
-    }
-    const url: string = json.video.smileInfo.url;
-    if (url.endsWith('low')) {
-      throw new Error('economy');
-    }
-    return url;
+function getURLFromAPIData(apiData: any) {
+  const url: string = apiData.video.smileInfo.url;
+  if (url.endsWith('low')) {
+    throw new Error('economy');
   }
+  return url;
 }
