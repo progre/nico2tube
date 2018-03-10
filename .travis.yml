@@ -21,4 +21,4 @@ deploy:
   on:
     tags: true
   prerelease: true
-skip_cleanup: true
+  skip_cleanup: true
