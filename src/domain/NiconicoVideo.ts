@@ -49,8 +49,8 @@ export default class NiconicoVideo {
       title: this.title,
       description: `${this.description}\n\n`
         + `Original upload date: ${moment().toISOString(true)}\n`
-        + `Uploaded with datfunity from GitHub\n`
-        + `https://github.com/progre/datfunity#readme`,
+        + `Uploaded with nico2tube from GitHub\n`
+        + `https://github.com/progre/nico2tube#readme`,
       tags: this.tags,
       categoryId: convertCategory(this.category),
     };

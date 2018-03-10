@@ -1,9 +1,9 @@
 {
-  "name": "datfunity",
-  "description": "Boilerplate for TypeScript project.",
+  "name": "nico2tube",
+  "description": "A data transfer tool from niconico to YouTube",
   "version": "1.0.0",
   "bugs": {
-    "url": "https://github.com/progre/typescript-boilerplate/issues"
+    "url": "https://github.com/progre/nico2tube/issues"
   },
   "dependencies": {
     "cron": "^1.3.0",
@@ -60,13 +60,13 @@
   "files": [
     "dist"
   ],
-  "homepage": "https://github.com/progre/typescript-boilerplate#readme",
+  "homepage": "https://github.com/progre/nico2tube#readme",
   "license": "MIT",
   "main": "dist/index.js",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/progre/typescript-boilerplate.git"
+    "url": "git+https://github.com/progre/nico2tube.git"
   },
   "scripts": {
     "build": "run-s clean release-build",
