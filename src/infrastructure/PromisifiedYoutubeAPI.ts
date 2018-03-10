@@ -36,6 +36,8 @@ export const checkAuth = (() => {
       await update({ part: 'snippet' });
     } catch (e) {
       if (e.code === 401) {
+        // TODO: ビューで食える情報を落としたい
+        // 'Login Required', 'Invalid Credentials'
         throw e;
       }
     }

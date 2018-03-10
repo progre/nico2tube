@@ -42,14 +42,15 @@ export default class PlaylistMaker {
     playlist.youtubePlaylistId = playlistId;
     const replaceMap = playlist.toReplaceMap();
     for (const item of playlist.items) {
+      const description = replaceNiconicoURL(
+        item.videoSnippet!.description,
+        replaceMap,
+      );
       await this.youtube.updateVideo(
         item.videoId!,
         {
           ...item.videoSnippet!,
-          description: replaceNiconicoURL(
-            item.videoSnippet!.description,
-            replaceMap,
-          ),
+          description,
         },
       );
     }

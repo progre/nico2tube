@@ -108,7 +108,7 @@ export default class Niconico {
     });
     const stats = await stat(filePath);
     if (stats.size !== contentLength) {
-      throw new Error('Download failed');
+      throw new Error(`Content length mismatch. expected=${contentLength} actual=${stats.size}`);
     }
   }
 

@@ -1,3 +1,4 @@
+import moment from 'moment';
 import xml2js from 'xml2js';
 
 async function parseXMLFromString(xmlString: string) {
@@ -46,7 +47,10 @@ export default class NiconicoVideo {
   toSnippet() {
     return {
       title: this.title,
-      description: this.description,
+      description: `${this.description}\n\n`
+        + `Original upload date: ${moment().toISOString(true)}\n`
+        + `Uploaded with datfunity from GitHub\n`
+        + `https://github.com/progre/datfunity#readme`,
       tags: this.tags,
       categoryId: convertCategory(this.category),
     };
@@ -101,8 +105,8 @@ function convertCategory(category: string | null) {
     政治: 25,
     アニメ: 1,
     ゲーム: 20,
-    東方: 20,
-    アイドルマスター: 20,
+    東方: 24, // Entertainment
+    アイドルマスター: 24, // Entertainment
     ラジオ: 24, // Entertainment
     描いてみた: 26, // Howto & Style
     例のアレ: 23, // Comedy

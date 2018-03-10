@@ -63,6 +63,7 @@ export default class Youtube {
     }
     this.authenticating = false;
   }
+  // TODO: トークンの更新 https://developers.google.com/youtube/v3/guides/auth/server-side-web-apps?hl=ja#OAuth2_Refreshing_a_Token
 
   async uploadVideo(
     filePath: string,
