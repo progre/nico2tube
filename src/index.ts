@@ -3,12 +3,14 @@ try { require('source-map-support').install(); } catch (e) { /* NOP */ }
 import electron from 'electron';
 // tslint:enable:no-implicit-dependencies
 import TransferTaskWorker from './application/TransferTaskWorker';
+import { initMacMenu } from './macmenu';
 
 const { app, BrowserWindow, ipcMain } = electron;
 
 async function main() {
   await new Promise((resolve, _) => app.once('ready', resolve));
   app.on('window-all-closed', () => { app.quit(); });
+  initMacMenu();
   start();
 }
 
