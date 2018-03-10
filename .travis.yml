@@ -3,11 +3,22 @@ dist: trusty
 language: node_js
 node_js: 8
 before_script:
-  - sudo rm /etc/apt/sources.list.d/google-chrome.list
-  - sudo dpkg --add-architecture i386
-  - sudo apt-get update
-  - sudo apt-get install -y wine1.6
+- sudo rm /etc/apt/sources.list.d/google-chrome.list
+- sudo dpkg --add-architecture i386
+- sudo apt-get update
+- sudo apt-get install -y wine1.6
 script:
-  - npm run debug-build
-  - npm run build
-  - npm run package
+- npm run debug-build
+- npm run build
+- npm run package
+deploy:
+  provider: releases
+  api_key:
+    secure: Z12EXV0/KqUIJQCUeWh9/lT1KtA6Y9K4sq6qfjsLJEbyPgfAEpkZhQM9ZZN3F+gj6neldArb+GDUYaGiIX1m4EUkSypccIOpyVQgPJ15htoQZNkeS2R9mIwf804mvcHMWLPPIH0xw0aMvrNRzPmRjXtfyBtGD197F4FpkfeurpjuWMVuwmshp1Nup1cDJAW5O/Np6ac1Rbgw1bzQkEupShS5xLf40oTtxWY6pbHrCM4g7bSqycpEAPYcm0ikZq6uSncg8SQnnvWnpZVybCvLI+FeKn8iTVDsgF9TkAonjwUr5XFVi5VhjZ0P8PorSIaBknUL+Oq+ggiSMHw0uSBaUpSSKlo73quAdmyrltUxndgvtZiAZXSQXWh08HbjrWkW2KFjooi+iJigIXuyoexdzhI5Xvx+7d6DOs3L30vdjU1qbIg5n0Z7lCeASeHTl0JiB+A6Kf4kRBOXfBF+awlQnFOp+mbra/Ns9FQsA0tuYFkMw9X3tJ8+3tEJKpWFEXfHc+k1REdok762mJ9Rn4AuqQyiSC9i94JyY4E4UBCDD5bu6/boJLCPQnNrC1CmK/I1nXrXFkkR2ErXJErAc61cozuvTRVGbny36HyicfAVUpRXTBI6Y0lrx3Xj7BoD96QRHdsceemL/hf1jbdLp/YeMXIl8Y8KTrhNsDNf8XQ3suM=
+  file:
+    - tmp/nico2tube-mac.zip
+    - tmp/nico2tube-win.zip
+  on:
+    tags: true
+  prerelease: true
+skip_cleanup: true
