@@ -79,37 +79,14 @@ export default class Niconico {
     if (preAccessResult.status !== 200) {
       throw new Error();
     }
-    const mainAccessResult = await fetch(url, {
-      headers: {
-        cookie: `${cookie};${preAccessResult.headers.getAll('set-cookie').join(';')}`,
-      },
-      redirect: 'manual',
-    });
-    if (mainAccessResult.status !== 200) {
-      throw new Error(`Fetch failed. url=${url} status=${mainAccessResult.status}`);
-    }
-    const contentLength = parseInt(mainAccessResult.headers.get('content-length'), 10);
-    const str = progressStream({
-      length: contentLength,
-      time: 250,
-    });
-    str.on('progress', (progress: any) => {
-      progressReceiver.progress(progress.percentage / 100);
-    });
-    if (filePath.length === 0) {
-      return; // debug use only
-    }
-    await new Promise((resolve, reject) => {
-      mainAccessResult.body
-        .pipe(str)
-        .pipe(fs.createWriteStream(filePath))
-        .on('error', (e: Error) => { reject(e); })
-        .on('finish', () => { resolve(); });
-    });
-    const stats = await stat(filePath);
-    if (stats.size !== contentLength) {
-      throw new Error(`Content length mismatch. expected=${contentLength} actual=${stats.size}`);
-    }
+    await downloadLargeFile(
+      `${cookie};${preAccessResult.headers.getAll('set-cookie').join(';')}`,
+      videoId,
+      url,
+      null,
+      filePath,
+      progressReceiver,
+    );
   }
 
   async downloadThumbnail(
@@ -150,6 +127,76 @@ async function downloadFile(from: string, to: string) {
     res.body.pipe(fs.createWriteStream(to))
       .on('error', reject)
       .on('finish', resolve);
+  });
+}
+
+async function downloadLargeFile(
+  cookie: string,
+  videoId: string,
+  url: string,
+  range: { from: number, to: number } | null,
+  filePath: string,
+  progressReceiver: { progress(progress: number): void; },
+): Promise<void> {
+  const mainAccessResult = await fetch(url, {
+    headers: {
+      cookie,
+      ...(range == null ? {} : { Range: `bytes=${range.from}-${range.to}` }),
+    },
+    redirect: 'manual',
+  });
+  if (range == null && mainAccessResult.status !== 200
+    || range != null && mainAccessResult.status !== 206) {
+    throw new Error(`Fetch failed. url=${url} status=${mainAccessResult.status}`);
+  }
+  if (filePath.length === 0) {
+    return; // debug use only
+  }
+  const contentLength = parseInt(mainAccessResult.headers.get('content-length'), 10);
+  const downloadedRatio = range == null ? 0 : range.from / range.to;
+  await transfer(
+    mainAccessResult.body,
+    contentLength,
+    fs.createWriteStream(filePath, range == null ? {} : { flags: 'a' }),
+    {
+      progress(progress: number) {
+        progressReceiver.progress(downloadedRatio + (1 - downloadedRatio) * progress);
+      },
+    },
+  );
+  const stats = await stat(filePath);
+  const expectFileSize = range == null ? contentLength : range.to;
+  if (stats.size >= expectFileSize) {
+    return;
+  }
+  console.log('retry', { from: stats.size, to: expectFileSize });
+  // リトライ
+  return downloadLargeFile(
+    cookie,
+    videoId,
+    url,
+    { from: stats.size, to: expectFileSize },
+    filePath,
+    progressReceiver,
+  );
+}
+
+async function transfer(
+  body: NodeJS.ReadableStream,
+  contentLength: number,
+  file: fs.WriteStream,
+  progressReceiver: { progress(progress: number): void; },
+) {
+  const str = progressStream({ length: contentLength, time: 250 });
+  str.on('progress', (progress: any) => {
+    progressReceiver.progress(progress.percentage / 100);
+  });
+  await new Promise((resolve, reject) => {
+    body
+      .pipe(str)
+      .pipe(file)
+      .on('error', (e: Error) => { reject(e); })
+      .on('finish', () => { resolve(); });
   });
 }
 
