@@ -48,9 +48,8 @@ export default class NiconicoVideo {
     return {
       title: this.title,
       description: `${this.description}\n\n`
-        + `Original upload date: ${moment().toISOString(true)}\n`
-        + `Uploaded with nico2tube from GitHub\n`
-        + `https://github.com/progre/nico2tube#readme`,
+        + `Original upload date: ${moment().format('YYYY-MM-DD[T]HH:mm:ss.SSSZZ')}\n`
+        + `Uploaded with nico2tube https://github.com/progre/nico2tube#readme`,
       tags: this.tags,
       categoryId: convertCategory(this.category),
     };
