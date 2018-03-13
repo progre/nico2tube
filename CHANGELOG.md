@@ -1,3 +1,13 @@
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/progre/nico2tube/compare/0.2.0...0.3.0) (2018-03-13)
+
+
+### Features
+
+* timeout when network disconnected ([122e643](https://github.com/progre/nico2tube/commit/122e643))
+
+
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/progre/nico2tube/compare/0.1.0...0.2.0) (2018-03-13)
 
