@@ -138,24 +138,24 @@ async function downloadLargeFile(
   filePath: string,
   progressReceiver: { progress(progress: number): void; },
 ): Promise<void> {
-  const mainAccessResult = await fetch(url, {
+  const res = await fetch(url, {
     headers: {
       cookie,
       ...(range == null ? {} : { Range: `bytes=${range.from}-${range.to}` }),
     },
     redirect: 'manual',
   });
-  if (range == null && mainAccessResult.status !== 200
-    || range != null && mainAccessResult.status !== 206) {
-    throw new Error(`Fetch failed. url=${url} status=${mainAccessResult.status}`);
+  if (range == null && res.status !== 200
+    || range != null && res.status !== 206) {
+    throw new Error(`Fetch failed. url=${url} status=${res.status}`);
   }
   if (filePath.length === 0) {
     return; // debug use only
   }
-  const contentLength = parseInt(mainAccessResult.headers.get('content-length'), 10);
+  const contentLength = parseInt(res.headers.get('content-length'), 10);
   const downloadedRatio = range == null ? 0 : range.from / range.to;
   await transfer(
-    mainAccessResult.body,
+    res.body,
     contentLength,
     fs.createWriteStream(filePath, range == null ? {} : { flags: 'a' }),
     {
@@ -191,13 +191,31 @@ async function transfer(
   str.on('progress', (progress: any) => {
     progressReceiver.progress(progress.percentage / 100);
   });
+  let timer: any;
   await new Promise((resolve, reject) => {
+    // ネットワーク切断などで通信が途絶えることを無理やり検知する
+    let transferred = -1;
+    timer = setInterval(
+      () => {
+        const progress = str.progress();
+        if (transferred === progress.transferred) {
+          transferred = progress.transferred;
+          return;
+        }
+        clearInterval(timer);
+        // 1分間変化がなければタイムアウト
+        file.close();
+        reject(new Error('Force timeout'));
+      },
+      10 * 1000,
+    );
     body
       .pipe(str)
       .pipe(file)
       .on('error', (e: Error) => { reject(e); })
       .on('finish', () => { resolve(); });
   });
+  clearInterval(timer);
 }
 
 function getURLOnGetFLV(body: string): string | null {
