@@ -1,3 +1,13 @@
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/progre/nico2tube/compare/0.3.0...0.4.0) (2018-03-13)
+
+
+### Features
+
+* fix additional description format ([46b074c](https://github.com/progre/nico2tube/commit/46b074c))
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/progre/nico2tube/compare/0.2.0...0.3.0) (2018-03-13)
 
