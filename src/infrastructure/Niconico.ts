@@ -198,7 +198,7 @@ async function transfer(
     timer = setInterval(
       () => {
         const progress = str.progress();
-        if (transferred === progress.transferred) {
+        if (transferred !== progress.transferred) {
           transferred = progress.transferred;
           return;
         }
@@ -207,7 +207,7 @@ async function transfer(
         file.close();
         reject(new Error('Force timeout'));
       },
-      10 * 1000,
+      60 * 1000,
     );
     body
       .pipe(str)
