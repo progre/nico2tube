@@ -106,6 +106,7 @@ export default class PromisifiedYoutubeAPI {
           e.message += ` (function: ${name})`;
           throw e;
         }
+        console.log(`refreshing access token (reason: ${e.message})`);
       }
       await refreshAccessToken(this.clientId, this.clientSecret, this.refreshToken);
       return this.promisify(name, func);
@@ -114,7 +115,6 @@ export default class PromisifiedYoutubeAPI {
 }
 
 async function refreshAccessToken(clientId: string, clientSecret: string, refreshToken: string) {
-  console.log('refresh', new Error().stack);
   const res = await fetch('https://accounts.google.com/o/oauth2/token', {
     method: 'POST',
     headers: {

@@ -85,4 +85,14 @@ export default class NiconicoStub {
 `;
     // tslint:enable:max-line-length
   }
+
+  async downloadFromDmc(
+    email: string,
+    password: string,
+    videoId: string,
+    filePath: string,
+    progressReceiver: { progress(progress: number): void; },
+  ) {
+    process.stdout.write('downloadFromDmc\n');
+  }
 }

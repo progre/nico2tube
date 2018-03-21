@@ -11,6 +11,7 @@
     "i18next": "^10.5.0",
     "material-ui": "^1.0.0-beta.35",
     "moment": "^2.21.0",
+    "nicovideo-api-nodejs-client": "SSW-SCIENTIFIC/nicovideo-api-nodejs-client#9ca01a3c86a412a33e06b08a69f634c5452f6bf7",
     "node-fetch": "^1.7.3",
     "progress-stream": "^2.0.0",
     "react": "^16.2.0",
@@ -71,8 +72,8 @@
   },
   "scripts": {
     "build": "run-s clean release-build",
-    "clean": "del-cli dist tmp",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "clean": "del-cli dist tmp",
     "commitmsg": "commitlint -e $GIT_PARAMS",
     "debug-build": "cross-env NODE_ENV=development webpack --progress",
     "package": "electron-packer",

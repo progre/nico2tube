@@ -52,7 +52,7 @@ export default class NiconicoDownloader {
     }
     const conf = await this.configurationRepo.get();
 
-    const videoPath = await this.downloadVideo(videoId, apiData, conf);
+    const videoPath = await this.downloadVideo(videoId, conf);
     const niconicoVideo = await this.downloadMeta(videoId, apiData);
     const thumbnailPath = await this.niconico.downloadThumbnail(
       videoId,
@@ -67,20 +67,12 @@ export default class NiconicoDownloader {
     this.downloaded.next({ videoId, niconicoVideo, videoPath, thumbnailPath });
   }
 
-  private async downloadVideo(videoId: string, apiData: any, conf: Configuration) {
-    // TODO: ログイン不要になったはず
-    const sessionCookie = await this.niconico.createSessionCookie(
+  private async downloadVideo(videoId: string, conf: Configuration) {
+    const filePath = `${conf.workingFolderPath}/${videoId}`;
+    await this.niconico.downloadFromDmc(
       conf.niconicoEmail,
       conf.niconicoPassword,
-    );
-    if (sessionCookie == null) {
-      throw new Error('logging in failed');
-    }
-    const filePath = `${conf.workingFolderPath}/${videoId}`;
-    await this.niconico.download(
-      sessionCookie,
       videoId,
-      getURLFromAPIData(apiData),
       filePath,
       {
         progress: (progress: number) => {

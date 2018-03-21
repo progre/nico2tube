@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { API } from 'nicovideo-api-nodejs-client';
 import fetch from 'node-fetch';
 import util from 'util';
 const progressStream = require('progress-stream');
@@ -106,6 +107,33 @@ export default class Niconico {
     return fetchURLWithCookie(
       `http://www.nicovideo.jp/mylist/${mylistId}?rss=2.0`,
       cookie,
+    );
+  }
+
+  async downloadFromDmc(
+    email: string,
+    password: string,
+    videoId: string,
+    filePath: string,
+    progressReceiver: { progress(progress: number): void; },
+  ) {
+    const session = new API.Session();
+    await session.login(email, password);
+    const video = new API.Video(session);
+    const watchData = await video.getWatchData(videoId);
+    if (watchData.video.dmcInfo == null
+      || watchData.video.dmcInfo.quality == null
+      || watchData.video.dmcInfo.quality.videos.some(x => !x.available)
+    ) {
+      throw new Error('economy');
+    }
+    const res = await video.getVideoStreamFromDmc(watchData);
+    const contentLength = parseInt(res.headers['content-length'], 10);
+    await transfer(
+      res.data,
+      contentLength,
+      fs.createWriteStream(filePath),
+      progressReceiver,
     );
   }
 }
