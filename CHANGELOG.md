@@ -1,3 +1,19 @@
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/progre/nico2tube/compare/0.4.0...0.5.0) (2018-03-21)
+
+
+### Bug Fixes
+
+* bug fix for force timeout ([fbc3d86](https://github.com/progre/nico2tube/commit/fbc3d86))
+* set video created date (not now) ([5d982ba](https://github.com/progre/nico2tube/commit/5d982ba))
+
+
+### Features
+
+* add a mylist upload sort rule ([e77dea8](https://github.com/progre/nico2tube/commit/e77dea8))
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/progre/nico2tube/compare/0.3.0...0.4.0) (2018-03-13)
 
