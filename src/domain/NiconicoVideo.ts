@@ -45,10 +45,12 @@ export default class NiconicoVideo {
   }
 
   toSnippet() {
+    const date = moment.parseZone(this.createdAt)
+      .format('YYYY-MM-DD[T]HH:mm:ss.SSSZZ');
     return {
       title: this.title,
       description: `${this.description}\n\n`
-        + `Original upload date: ${moment().format('YYYY-MM-DD[T]HH:mm:ss.SSSZZ')}\n`
+        + `Original upload date: ${date}\n`
         + `Uploaded with nico2tube https://github.com/progre/nico2tube#readme`,
       tags: this.tags,
       categoryId: convertCategory(this.category),
