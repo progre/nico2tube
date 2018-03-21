@@ -1,4 +1,6 @@
+import moment, { Moment } from 'moment';
 import xml2js from 'xml2js';
+
 const parseString = async (xml: string) => new Promise<any>((resolve, reject) => {
   xml2js.parseString(xml, (err, result) => {
     if (err != null) {
@@ -17,6 +19,7 @@ export default class NiconicoMylist {
     readonly items: ReadonlyArray<{
       readonly videoId: string;
       readonly description: string;
+      readonly createdAt: Moment;
     }>,
   ) {
   }
@@ -34,8 +37,28 @@ export default class NiconicoMylist {
         return {
           videoId: /http:\/\/www\.nicovideo\.jp\/watch\/(.+)/.exec(x.link[0])![1],
           description: (await parseString(`<html>${x.description[0]}</html>`)).html.p[0]._,
+          createdAt: moment.parseZone(x.pubDate[0]),
         };
       })),
+    );
+  }
+
+  /**
+   * 投稿が新しい順になっている場合のみ、古い順にソートする
+   */
+  sortIfReverseOrder() {
+    const descItems = [...this.items];
+    descItems.sort((a, b) => b.createdAt.unix() - a.createdAt.unix());
+    if (this.items.every((x, i) => x !== descItems[i])) {
+      return this;
+    }
+    const ascItems = [...this.items];
+    ascItems.sort((a, b) => a.createdAt.unix() - b.createdAt.unix());
+    return new NiconicoMylist(
+      this.id,
+      this.name,
+      this.description,
+      ascItems,
     );
   }
 }

@@ -110,7 +110,7 @@ export default class TransferTaskWorker {
 
   private async enqueueMylist(niconicoURL: string) {
     const mylistId = parseMylistURL(niconicoURL);
-    const mylist = await this.fetchMylist(mylistId);
+    const mylist = (await this.fetchMylist(mylistId)).sortIfReverseOrder();
     this.playlists.push(MutablePlaylist.fromMylist(mylist));
     mylist.items.forEach((x) => {
       this.niconicoDownloader.enqueue(`http://www.nicovideo.jp/watch/${x.videoId}`);
