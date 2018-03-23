@@ -121,13 +121,21 @@ export default class Niconico {
     await session.login(email, password);
     const video = new API.Video(session);
     const watchData = await video.getWatchData(videoId);
-    if (watchData.video.dmcInfo == null
-      || watchData.video.dmcInfo.quality == null
-      || watchData.video.dmcInfo.quality.videos.some(x => !x.available)
-    ) {
-      throw new Error('economy');
-    }
-    const res = await video.getVideoStreamFromDmc(watchData);
+    const res = await (async () => {
+      if (watchData.video.dmcInfo == null
+        || watchData.video.dmcInfo.quality == null
+      ) {
+        if (watchData.video.smileInfo.url.endsWith('low')) {
+          throw new Error('economy');
+        }
+        return video.getVideoStreamFromSmile(watchData);
+      }
+      if (watchData.video.dmcInfo.quality.videos.some(x => !x.available)
+      ) {
+        throw new Error('economy');
+      }
+      return video.getVideoStreamFromDmc(watchData);
+    })();
     const contentLength = parseInt(res.headers['content-length'], 10);
     await transfer(
       res.data,
