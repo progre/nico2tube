@@ -1,0 +1,13 @@
+theme: jekyll-theme-architect
+plugins:
+  - jekyll-readme-index
+readme_index:
+  enabled: true
+  remove_originals: false
+lang: ja-JP
+title: nico2tube
+description: >-
+  nico2tube
+  はニコニコ動画にアップロードした動画を、簡単操作でYouTubeにアップロードし直すことができるツールです。ニコニコ新サーバー(DMC)に対応していて高画質で転送できます。
+favicon: /icon.png
+image_absolute_url: 'https://progre.github.io/nico2tube/icon.png'
