@@ -122,11 +122,3 @@ export default class NiconicoDownloader {
     return status.url;
   }
 }
-
-function getURLFromAPIData(apiData: any) {
-  const url: string = apiData.video.smileInfo.url;
-  if (url.endsWith('low')) {
-    throw new Error('economy');
-  }
-  return url;
-}
