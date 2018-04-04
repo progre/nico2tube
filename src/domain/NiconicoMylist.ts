@@ -1,15 +1,9 @@
+import cheerio from 'cheerio';
 import moment, { Moment } from 'moment';
+import util from 'util';
 import xml2js from 'xml2js';
 
-const parseString = async (xml: string) => new Promise<any>((resolve, reject) => {
-  xml2js.parseString(xml, (err, result) => {
-    if (err != null) {
-      reject(err);
-      return;
-    }
-    resolve(result);
-  });
-});
+const parseString: Function = util.promisify(xml2js.parseString);
 
 export default class NiconicoMylist {
   private constructor(
@@ -33,13 +27,11 @@ export default class NiconicoMylist {
       mylistId,
       /マイリスト (.+)‐ニコニコ動画/.exec(xmlDocument.rss.channel[0].title[0])![1],
       xmlDocument.rss.channel[0].description[0],
-      await Promise.all((<any[]>xmlDocument.rss.channel[0].item).map(async (x: any) => {
-        return {
-          videoId: /http:\/\/www\.nicovideo\.jp\/watch\/(.+)/.exec(x.link[0])![1],
-          description: (await parseString(`<html>${x.description[0]}</html>`)).html.p[0]._,
-          createdAt: moment.parseZone(x.pubDate[0]),
-        };
-      })),
+      await Promise.all((<any[]>xmlDocument.rss.channel[0].item).map(async (x: any) => ({
+        videoId: /http:\/\/www\.nicovideo\.jp\/watch\/(.+)/.exec(x.link[0])![1],
+        description: cheerio.load(x.description[0])('p.nico-memo').text(),
+        createdAt: moment.parseZone(x.pubDate[0]),
+      }))),
     );
   }
 
