@@ -79,17 +79,20 @@ export default class Youtube {
     if (items.length !== 1) {
       throw new Error(`Fetch video failed. id=${videoId} found=${items.length}`);
     }
+    const oldFullSnippet = items[0].snippet;
+    const oldSnippet = ['title', 'description', 'tags', 'categoryId']
+      .reduce((p, c) => ({ ...p, [c]: oldFullSnippet[c] }), {});
 
     // remove null|undefined properties because these overwrites
-    const cleanSnippet = { ...snippet };
-    Object.keys(cleanSnippet)
-      .filter(key => (<any>cleanSnippet)[key] == null)
-      .forEach((key) => { delete (<any>cleanSnippet)[key]; });
+    const cleanSnippet = Object.entries(snippet)
+      .filter(([, value]) => value != null)
+      .reduce((p, [key, value]) => ({ ...p, [key]: value }), {});
+
     await this.api.updateVideo({
       part: 'snippet',
       resource: {
         id: videoId,
-        snippet: { ...items[0].snippet, ...cleanSnippet },
+        snippet: { ...oldSnippet, ...cleanSnippet },
       },
     });
   }
