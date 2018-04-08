@@ -45,7 +45,6 @@ export default class PromisifiedYoutubeAPI {
         const req = youtubeAPI.videos.insert(params, (err: any, data: any) => {
           clearInterval(timer);
           if (err != null) {
-            err.message += ' (function: insertVideo)';
             reject(err);
             return;
           }
@@ -60,7 +59,7 @@ export default class PromisifiedYoutubeAPI {
       });
     } catch (e) {
       if (e.message !== 'Invalid Credentials') {
-        e.message += ' (function: insertVideo)';
+        e.message += ` (function: insertVideo, params: ${JSON.stringify(params)})`;
         throw e;
       }
     }
