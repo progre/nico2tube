@@ -52,7 +52,7 @@ export default class NiconicoVideo {
       description: `${this.description}\n\n`
         + `Original upload date: ${date}\n`
         + `Uploaded with nico2tube https://github.com/progre/nico2tube#readme`,
-      tags: this.tags,
+      tags: this.tags.map(x => x.replace(/</g, '＜').replace(/>/g, '＞')), // YouTube doesn't allow.
       categoryId: convertCategory(this.category),
     };
   }
