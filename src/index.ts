@@ -47,6 +47,9 @@ function listenDomain(
       message: `[${e.label || ''}] ${e.message}`,
     });
   });
+  transferTaskWorker.warning.subscribe((message) => {
+    webContents.send('addError', { message });
+  });
 }
 
 function listenIPC(transferTaskWorker: TransferTaskWorker) {

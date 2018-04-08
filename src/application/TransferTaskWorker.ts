@@ -27,6 +27,7 @@ export default class TransferTaskWorker {
 
   message = new Subject<string>();
   error = new Subject<ApplicationError>();
+  warning = new Subject<string>();
 
   constructor(dryRun: boolean, webContents: electron.WebContents) {
     this.niconico = dryRun ? new NiconicoStub() : new Niconico();
@@ -110,7 +111,15 @@ export default class TransferTaskWorker {
 
   private async enqueueMylist(niconicoURL: string) {
     const mylistId = parseMylistURL(niconicoURL);
-    const mylist = (await this.fetchMylist(mylistId)).sortIfReverseOrder();
+    const { niconicoMylist: mylist, communityOnlyVideos } = (
+      await this.fetchMylist(mylistId)
+    );
+    mylist.sortIfReverseOrder();
+    if (communityOnlyVideos.length > 0) {
+      this.warning.next(
+        `コミュニティ限定動画を除外しました。id(${communityOnlyVideos.join(', ')})`,
+      );
+    }
     this.playlists.push(MutablePlaylist.fromMylist(mylist));
     mylist.items.forEach((x) => {
       this.niconicoDownloader.enqueue(`http://www.nicovideo.jp/watch/${x.videoId}`);

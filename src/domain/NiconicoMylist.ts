@@ -23,34 +23,38 @@ export default class NiconicoMylist {
     if (xmlDocument.rss.channel[0].title[0] == null) {
       throw new Error('invalid mylist');
     }
-    return new this(
-      mylistId,
-      /マイリスト (.+)‐ニコニコ動画/.exec(xmlDocument.rss.channel[0].title[0])![1],
-      xmlDocument.rss.channel[0].description[0],
-      await Promise.all((<any[]>xmlDocument.rss.channel[0].item).map(async (x: any) => ({
-        videoId: /http:\/\/www\.nicovideo\.jp\/watch\/(.+)/.exec(x.link[0])![1],
-        description: cheerio.load(x.description[0])('p.nico-memo').text(),
-        createdAt: moment.parseZone(x.pubDate[0]),
-      }))),
-    );
+    const items = (<any[]>xmlDocument.rss.channel[0].item).map((x: any) => ({
+      videoId: /http:\/\/www\.nicovideo\.jp\/watch\/(.+)/.exec(x.link[0])![1],
+      description: cheerio.load(x.description[0])('p.nico-memo').text(),
+      createdAt: moment.parseZone(x.pubDate[0]),
+    }));
+    const numberOnly = /^[0-9]+$/;
+    const communityOnlyVideos = items
+      .filter(x => x.videoId.match(numberOnly))
+      .map(x => x.videoId);
+    return {
+      communityOnlyVideos,
+      niconicoMylist: new this(
+        mylistId,
+        /マイリスト (.+)‐ニコニコ動画/.exec(xmlDocument.rss.channel[0].title[0])![1],
+        xmlDocument.rss.channel[0].description[0],
+        items.filter(x => !x.videoId.match(numberOnly)),
+      ),
+    };
   }
 
   /**
-   * 投稿が新しい順になっている場合のみ、古い順にソートする
+   * 1件目が最新投稿になっている場合、逆順にソートする
    */
   sortIfReverseOrder() {
-    const descItems = [...this.items];
-    descItems.sort((a, b) => b.createdAt.unix() - a.createdAt.unix());
-    if (this.items.every((x, i) => x !== descItems[i])) {
+    if (this.items.some(x => x.createdAt.unix() > this.items[0].createdAt.unix())) {
       return this;
     }
-    const ascItems = [...this.items];
-    ascItems.sort((a, b) => a.createdAt.unix() - b.createdAt.unix());
     return new NiconicoMylist(
       this.id,
       this.name,
       this.description,
-      ascItems,
+      [...this.items].reverse(),
     );
   }
 }
