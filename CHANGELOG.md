@@ -1,3 +1,21 @@
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/progre/nico2tube/compare/0.6.0...0.7.0) (2018-04-10)
+
+
+### Bug Fixes
+
+* implement replacing invalid characters(<, >) ([6736b56](https://github.com/progre/nico2tube/commit/6736b56))
+* fix error log ([600c245](https://github.com/progre/nico2tube/commit/600c245))
+* fix upload ([8db8ccb](https://github.com/progre/nico2tube/commit/8db8ccb))
+* fix when mylist has no memos ([d25e552](https://github.com/progre/nico2tube/commit/d25e552))
+
+
+### Features
+
+* add skip community only video, change sort rule ([4822f5f](https://github.com/progre/nico2tube/commit/4822f5f))
+
+
+
 <a name="0.6.0"></a>
 # [0.6.0](https://github.com/progre/nico2tube/compare/0.5.0...0.6.0) (2018-03-24)
 
