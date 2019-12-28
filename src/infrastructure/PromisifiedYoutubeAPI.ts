@@ -17,12 +17,13 @@ interface AccessToken {
 
 export default class PromisifiedYoutubeAPI {
   // tslint:disable:max-line-length
-  private clientId = encryptor.decrypt('dd8351bd6c4259b262f70aeb9d3f2227a5ed6bdef0c3798882a4d0bb151fdf8a32eccb322d8370c42e26246e9d97ba57jXu8fWCt6UU4bHDuv24SC3o0tcZPY8MiZ067CyuA4GhH/SNPANiN3EvOIl23kIfh1wqCthvYdyG9vuvSXgWO7p8b5qlLBK9/yM7mkPN2Q8A=');
-  private clientSecret = encryptor.decrypt('880090244585df22a14ff228999cad3f7d6a98dc4f21df7de9dffc2a1269e99621703fea2b749e6622ce79a4aa1b1ccfWJiKoyS4V55UILG7uhkq2OuXahxnj2qmBqUZ7K4DGe4=');
+  private clientId = encryptor.decrypt('3213323974022a8dadb354406885990b9d3bb664d3dd13d33e3821280867561bb8b16ec21176af4a65e4508eb8ada11f2O7ZhyvqN4zkoWJKGqUtsZcvf8XpmjVab/TFK5uD/4emLAIFWiC4y6oLjXGxdMOhXhMoxzl6u+8+L797Ql9thklTWQRYhKBHkLhWdBifwAo=');
+  private clientSecret = encryptor.decrypt('627a6ef9537ed638fe5d13ec50763a2fcc3fc0f8b5bda1d70dc9aa9219893903a0cd70e3ccd9bfa858f38cc453ef38e1+h4wNNzhTBEwz88CsTEcSo1cgA3rKBJX90nJkWSLhrQ=');
   // tslint:enable:max-line-length
   private refreshToken!: string;
 
   async authenticate() {
+    console.log('authenticate');
     const accessToken = await getAccessToken(this.clientId, this.clientSecret);
     if (accessToken == null) {
       return;
@@ -39,6 +40,7 @@ export default class PromisifiedYoutubeAPI {
     size: number,
     progressReceiver: { progress(progress: number): void; },
   ): Promise<any> {
+    console.log('insertVideo');
     try {
       return await new Promise<any>((resolve, reject) => {
         let timer: any;
@@ -71,10 +73,11 @@ export default class PromisifiedYoutubeAPI {
    * 権限チェック
    */
   checkAuth = (() => {
+    console.log('checkAuth');
     const update = util.promisify(youtubeAPI.playlists.update);
     return async (): Promise<void> => {
       try {
-        await update({ part: 'snippet' });
+        console.log(await update({ part: 'snippet' }));
       } catch (e) {
         if (e.message === 'Login Required') {
           throw e;
@@ -83,6 +86,7 @@ export default class PromisifiedYoutubeAPI {
           return;
         }
       }
+      console.log(`refreshing access token (reason: check failed`);
       await refreshAccessToken(this.clientId, this.clientSecret, this.refreshToken);
       return this.checkAuth();
     };
@@ -94,9 +98,10 @@ export default class PromisifiedYoutubeAPI {
   insertPlaylistItem = this.promisify('insertPlaylistItem', youtubeAPI.playlistItems.insert);
   setThumbnail = this.promisify('setThumbnail', youtubeAPI.thumbnails.set);
 
-  promisify(name: string, func: Function) {
+  private promisify(name: string, func: Function) {
     const promisifiedFunc = util.promisify(func);
     return async (params: any) => {
+      console.log(name);
       try {
         return await promisifiedFunc(params);
       } catch (e) {

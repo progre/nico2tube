@@ -19,7 +19,7 @@ export default class TransferTaskWorker {
   private readonly configurationRepo: ConfigurationRepo;
   private readonly niconico: Niconico;
   private readonly youtube: Youtube;
-  private readonly privacyStatus = 'public';
+  private readonly privacyStatus = 'private';
   private readonly niconicoDownloader: NiconicoDownloader;
   private readonly youtubeUploader: YoutubeUploader;
   private readonly playlistMaker: PlaylistMaker;
